@@ -15,8 +15,8 @@ class MyUserManager(BaseUserManager):
             raise ValueError('Users must have a phone')
         if not password:
             raise ValueError('Password is mandatory to pass')
-        elif len(password)<6:
-            raise ValueError('Password should be more than 6 Characters')
+        elif len(password)<6 or len(password)>18:
+            raise ValueError('Password should have a minimum 6 characters and a maximum of 18 characters')
 
         user = self.model(
             username=self.normalize_email(username),
@@ -27,7 +27,7 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, full_name, gender, dob, phone, password):
+    def create_superuser(self, username, full_name, phone, password):
         user = self.create_user(
             username=self.normalize_email(username),
             full_name=full_name

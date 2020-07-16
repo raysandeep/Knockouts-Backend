@@ -10,5 +10,6 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = [
             'question_title',
             'question',
-            'difficulty_level'
+            'difficulty_level',
+            'id'
         ]

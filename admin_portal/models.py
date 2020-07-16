@@ -2,9 +2,11 @@ from django.db import models
 from uuid import uuid4
 from django.contrib.postgres.fields import JSONField
 from accounts.models import User
+from . import default_json
 
 class QuestionsModel(models.Model):
     id = models.UUIDField(default=uuid4,primary_key=True)
+    question_title = models.CharField(max_length=200)
     question = JSONField()
     is_assigned = models.BooleanField(default=False)
     difficulty_level = models.IntegerField(default=0)
@@ -35,6 +37,7 @@ class RoomParticipant(models.Model):
     current_code = models.TextField()
     language_of_code = models.CharField(max_length=100)
     is_submitted = models.BooleanField(default=False)
+    score = models.IntegerField(default=0)
 
 
 class TestCaseSolutionLogger(models.Model):

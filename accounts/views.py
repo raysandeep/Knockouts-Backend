@@ -63,3 +63,23 @@ class UserLoginView(APIView):
                     "phone_no":user.phone,
                     "token":token.key
             }},status=200)
+
+class AdminLoginView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = [JSONParser]
+    # User Login Create a Auth Token
+    def post(self, request):
+        req_data = request.data
+        user = authenticate(username=req_data['username'], password=req_data['password'])
+        if not user.is_admin:
+            return Response({"message":"Invalid Details"}, status=400)
+        else:
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({
+                "message":"User Logged In", 
+                "user":{
+                    "username":user.username,
+                    "full_name":user.full_name,
+                    "phone_no":user.phone,
+                    "token":token.key
+            }},status=200)

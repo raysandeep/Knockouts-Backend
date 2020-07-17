@@ -98,8 +98,8 @@ class AssignPeopleAPIView(APIView):
         round_query = Rounds.objects.filter(id=id)
         print(round_query.exists())
         if round_query.exists():
-            return False,[]
-        return  True,round_query
+            return  True,round_query
+        return False,[]
 
     # very heavy route. 
     def post(self,request):

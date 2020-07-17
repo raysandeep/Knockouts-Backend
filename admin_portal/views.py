@@ -118,11 +118,11 @@ class AssignPeopleAPIView(APIView):
                     is_assigned=False).filter(
                         difficulty_level__range=(
                             0, queryset[0].difficulty_allowance
-                            )).order_by('?').distinct('id')
+                            )).order_by('id')
 
 
         questions_count = questions.count()
-        users = User.objects.filter(is_admin=False).filter(is_disqualified=False).order_by('?').distict('id')
+        users = User.objects.filter(is_admin=False).filter(is_disqualified=False)
         teams_count = math.floor(users.count()/2)
         if teams_count>questions_count:
             return Response({

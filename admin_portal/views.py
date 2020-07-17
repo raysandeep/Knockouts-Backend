@@ -120,6 +120,11 @@ class AssignPeopleAPIView(APIView):
                             0, queryset[0].difficulty_allowance
                             )).order_by('?')
 
+        #error debugging 
+        for i in questions:
+            print(i.id)
+
+
         questions_count = questions.count()
         users = User.objects.filter(is_admin=False).filter(is_disqualified=False).order_by('?')
         teams_count = math.floor(users.count()/2)

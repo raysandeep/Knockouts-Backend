@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from accounts.models import User
 import math
 from admin_portal.models import RoomParticipantAbstract, Rooms
-from rest_framework.permissions import IsAdmin
+from rest_framework.permissions import IsAdminUser
 
 
 class QuestionCreateAPIView(CreateAPIView):
@@ -92,7 +92,7 @@ class RoundListAPIView(ListAPIView):
 
 
 class AssignPeopleAPIView(APIView):
-    permission_classes = [IsAdmin]
+    permission_classes = [IsAdminUser]
     def get_round_queryset(self,id):
         round_query = Rounds.objects.filter(id=id)
         if round_query.exists():

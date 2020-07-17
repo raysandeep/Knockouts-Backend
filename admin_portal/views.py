@@ -94,7 +94,9 @@ class RoundListAPIView(ListAPIView):
 class AssignPeopleAPIView(APIView):
     permission_classes = [IsAdminUser]
     def get_round_queryset(self,id):
+        print(id)
         round_query = Rounds.objects.filter(id=id)
+        print(round_query.exists())
         if round_query.exists():
             return False,[]
         return  True,round_query
@@ -104,7 +106,7 @@ class AssignPeopleAPIView(APIView):
         if not request.data['round']:
             return Response({'status':'Round is a compulsary field!'},status=400)
         status, queryset = self.get_round_queryset(request.data['round'])
-        
+        print(status, queryset)
         if not status:
             return Response({'status':'Round doesn\'t exist'},status=400)
 
@@ -131,7 +133,9 @@ class AssignPeopleAPIView(APIView):
 
         room_participants = []
         room_list = []
-    
+        print("questions : "+str(questions_count))
+        print("teams     : "+str(teams_count))
+
         #Make Teams and Assign questions 
         for i in range(teams_count):
             room_dicti = {

@@ -155,9 +155,9 @@ class AssignPeopleAPIView(APIView):
             parti2room = RoomParticipantAbstract(**participant2)
 
             room_list.append(room)
-            room_participants.extend([parti1room,parti2room])
+            room_participants.append(parti1room).append(parti2room)
         print('\n\n\n')
-        print(room)
+        print(room_list)
         print('\n\n\n')
         print(room_participants)
         Rooms.objects.bulk_create(room_list)

@@ -34,12 +34,14 @@ class Rooms(models.Model):
     question = models.OneToOneField(QuestionsModel,on_delete=models.CASCADE)
     round = models.ForeignKey(Rounds,on_delete=models.CASCADE)
     
-
-
-class RoomParticipant(models.Model):
+# RoomParticipantAbstract Table
+class RoomParticipantAbstract(models.Model):
     id = models.UUIDField(default=uuid4,primary_key=True)
     room = models.ForeignKey(Rooms,on_delete=models.CASCADE)
     participant = models.ForeignKey(User,on_delete=models.CASCADE)
+
+class RoomParticipantManager(models.Model):
+    room_seat = models.OneToOneField(RoomParticipantAbstract,on_delete=models.CASCADE)
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(auto_now=True)
     current_code = models.TextField()

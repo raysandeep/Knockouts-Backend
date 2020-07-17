@@ -51,6 +51,7 @@ class User(AbstractBaseUser):
     is_staff				= models.BooleanField(default=False)
     is_superuser			= models.BooleanField(default=False)
     is_blocked              = models.BooleanField(default=False)
+    is_disqualified         = models.BooleanField(default=False)
 
 
     USERNAME_FIELD = 'username'

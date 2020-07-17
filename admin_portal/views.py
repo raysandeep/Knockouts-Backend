@@ -142,6 +142,7 @@ class AssignPeopleAPIView(APIView):
                 'question' : questions[i],
                 'round':queryset[0]
             }
+            print(room_dicti)
             room = Rooms(**room_dicti)
             participant1 = {
                 'room':room,

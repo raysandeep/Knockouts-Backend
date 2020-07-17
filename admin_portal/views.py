@@ -19,7 +19,7 @@ from accounts.models import User
 import math
 from admin_portal.models import RoomParticipantAbstract, Rooms
 from rest_framework.permissions import IsAdminUser
-import random
+
 
 class QuestionCreateAPIView(CreateAPIView):
     queryset = QuestionsModel.objects.all()
@@ -112,17 +112,17 @@ class AssignPeopleAPIView(APIView):
 
         #get questions 
 
-        questions = random.shuffle(QuestionsModel.objects.filter(
+        questions = QuestionsModel.objects.filter(
                     is_verified=True
                 ).filter(
                     is_assigned=False).filter(
                         difficulty_level__range=(
                             0, queryset[0].difficulty_allowance
-                            )))
+                            )).order_by('?').distinct('id')
 
 
         questions_count = questions.count()
-        users = random.shuffle(User.objects.filter(is_admin=False).filter(is_disqualified=False))
+        users = User.objects.filter(is_admin=False).filter(is_disqualified=False).order_by('?').distict('id')
         teams_count = math.floor(users.count()/2)
         if teams_count>questions_count:
             return Response({

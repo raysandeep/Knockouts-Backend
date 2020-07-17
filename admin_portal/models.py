@@ -9,6 +9,7 @@ class QuestionsModel(models.Model):
     question_title = models.CharField(max_length=200)
     question = JSONField()
     is_assigned = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
     difficulty_level = models.IntegerField(default=0)
 
 
@@ -21,10 +22,17 @@ class TestCaseHolder(models.Model):
     max_memory = models.IntegerField(default=0)
 
 
+class Rounds(models.Model):
+    id = models.UUIDField(default=uuid4,primary_key=True)
+    round_name = models.CharField(max_length=100)
+    difficulty_allowance = models.IntegerField(default=0)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
 
 class Rooms(models.Model):
     id = models.UUIDField(default=uuid4,primary_key=True)
     question = models.OneToOneField(QuestionsModel,on_delete=models.CASCADE)
+    round = models.ForeignKey(Rounds,on_delete=models.CASCADE)
     
 
 

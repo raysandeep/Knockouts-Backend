@@ -1,7 +1,9 @@
 from rest_framework import serializers
 
 from .models import(
-    QuestionsModel
+    QuestionsModel,
+    TestCaseHolder,
+    Rounds
 )
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -13,3 +15,18 @@ class QuestionSerializer(serializers.ModelSerializer):
             'difficulty_level',
             'id'
         ]
+
+class AdminQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuestionsModel
+        exclude = ['is_assigned']
+
+class TestCaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TestCaseHolder
+        fields = '__all__'
+    
+class RoundSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rounds
+        fields = '__all__'

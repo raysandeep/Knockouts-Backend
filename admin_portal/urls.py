@@ -10,4 +10,5 @@ urlpatterns = [
     path('rounds/get', views.RoundListAPIView.as_view()),
     path('rounds/update/<pk>', views.RoundUpdateAPIView.as_view()),
     path('rounds/create', views.RoundCreateAPIView.as_view()),
+    path('assign/',views.AssignPeopleAPIView.as_view())
 ]

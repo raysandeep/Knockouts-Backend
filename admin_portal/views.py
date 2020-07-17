@@ -165,7 +165,8 @@ class AssignPeopleAPIView(APIView):
         print(room_participants)
         Rooms.objects.bulk_create(room_list)
         RoomParticipantAbstract.objects.bulk_create(room_participants)
-        questions[0:teams_count].update(is_assigned=1)
+        inner_q = questions[0:teams_count]
+        QuestionsModel.objects.filter(id__in=inner_q).update(is_assigned=1)
         return Response({
             'status':'success'
         },status=200)

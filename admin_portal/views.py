@@ -118,15 +118,11 @@ class AssignPeopleAPIView(APIView):
                     is_assigned=False).filter(
                         difficulty_level__range=(
                             0, queryset[0].difficulty_allowance
-                            )).order_by('?')
-
-        #error debugging 
-        for i in questions:
-            print(i.id)
+                            )).order_by('?').distict('id')
 
 
         questions_count = questions.count()
-        users = User.objects.filter(is_admin=False).filter(is_disqualified=False).order_by('?')
+        users = User.objects.filter(is_admin=False).filter(is_disqualified=False).order_by('?').distict('id')
         teams_count = math.floor(users.count()/2)
         if teams_count>questions_count:
             return Response({
@@ -169,6 +165,7 @@ class AssignPeopleAPIView(APIView):
         print(room_participants)
         Rooms.objects.bulk_create(room_list)
         RoomParticipantAbstract.objects.bulk_create(room_participants)
+        questions[0:teams_count].update(is_assigned=1)
         return Response({
             'status':'success'
         },status=200)

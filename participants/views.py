@@ -42,8 +42,10 @@ class CodeRetrieveAPIView(RetrieveAPIView):
     serializer_class = RoomParticipantSerializer
     permission_classes = [IsnotDisqualified]
     parsers = [JSONParser]
+    lookup_url_kwarg = "pk"
     def get_queryset(self,request):
-        return RoomParticipantManager.objects.filter(room_seat__participant=self.request.user)
+        roompk = self.kwargs.get(self.lookup_url_kwarg)
+        return RoomParticipantManager.objects.filter(id=roompk).filter(room_seat__participant=self.request.user)
 
 class CodeUpdateAPIView(UpdateAPIView):
     queryset = RoomParticipantManager.objects.all()

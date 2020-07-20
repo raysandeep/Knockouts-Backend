@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework.generics import CreateAPIView,RetrieveUpdateDestroyAPIView,ListAPIView
+from rest_framework.generics import CreateAPIView,RetrieveUpdateDestroyAPIView,ListAPIView, RetrieveAPIView,DestroyAPIView
 from .permissions import IsDSCModerator,IsDSCQuestionModerator
 from .models import (
     QuestionsModel,
@@ -11,6 +11,8 @@ from .serializers import(
     TestCaseSerializer,
     AdminQuestionSerializer,
     RoundSerializer,
+    RoomsSerializer,
+    RoomParticipantAbstractSerializer
 )
 from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
@@ -19,7 +21,9 @@ from accounts.models import User
 import math
 from admin_portal.models import RoomParticipantAbstract, Rooms
 from rest_framework.permissions import IsAdminUser
-
+from accounts.serializers import (
+    UserSignupSerializer
+)
 
 class QuestionCreateAPIView(CreateAPIView):
     queryset = QuestionsModel.objects.all()
@@ -116,9 +120,8 @@ class AssignPeopleAPIView(APIView):
                     is_verified=True
                 ).filter(
                     is_assigned=False).filter(
-                        difficulty_level__range=(
-                            0, queryset[0].difficulty_allowance
-                            )).order_by('id')
+                        difficulty_level = queryset[0].difficulty_allowance
+                            ).order_by('difficulty_level')
 
 
         questions_count = questions.count()
@@ -170,3 +173,115 @@ class AssignPeopleAPIView(APIView):
         return Response({
             'status':'success'
         },status=200)
+
+
+class GetAllRoomsListAPIView(ListAPIView):
+    lookup_url_kwarg = "round"
+    serializer_class = RoomParticipantAbstractSerializer
+    permission_classes = [IsDSCQuestionModerator]
+    parsers = [JSONParser]
+    
+    def get_queryset(self):
+        round_id = self.kwargs.get(self.lookup_url_kwarg)
+        print(round_id)
+        room_query = RoomParticipantAbstract.objects.filter(room__round=round_id)
+        print(room_query.count())
+        return room_query
+
+class GetPendingPplAPIView(ListAPIView):
+    lookup_url_kwarg = "round"
+    serializer_class = UserSignupSerializer
+    permission_classes = [IsDSCQuestionModerator]
+    parsers = [JSONParser]
+    
+    def get_queryset(self):
+        round_id = self.kwargs.get(self.lookup_url_kwarg)
+        users_ids = RoomParticipantAbstract.objects.prefetch_related(
+            'participant'
+            ).filter(
+                room__round=round_id
+                ).values_list('participant__id',flat=True)
+        room = User.objects.filter(is_admin=False).filter(is_disqualified=False).exclude(id__in=users_ids)
+        return room
+
+
+class RoomCreateAPIView(APIView):
+    permission_classes = [IsDSCModerator]
+    parsers = [JSONParser]
+
+    def get_round_queryset(self,id):
+        print(id)
+        round_query = Rounds.objects.filter(id=id)
+        print(round_query.exists())
+        if round_query.exists():
+            return  True,round_query[0]
+        return False,[]
+
+
+    def post(self, request):
+        username1 = request.data['username1']
+        username2 = request.data['username2']
+        round = request.data['round']
+        
+        queryset1 = User.objects.filter(username=username1)
+        if not queryset1.exists():
+            return Response({'data':'No account found'},status=400)
+
+        queryset2 = User.objects.filter(username=username2)
+        if not queryset1.exists():
+            return Response({'data':'No account found'},status=400)
+
+        status, queryset = self.get_round_queryset(round)
+        print(status, queryset)
+        if not status:
+            return Response({'data':'No round found'},status=400)
+
+
+        questions =  QuestionsModel.objects.filter(
+                    is_verified=True
+                ).filter(
+                    is_assigned=False).filter(
+                        difficulty_level = queryset.difficulty_allowance
+                            ).order_by('difficulty_level')
+        questions_count = questions.count()
+
+        if questions_count==0:
+            return Response({'data':'No questions found!'},status=400)
+
+        dicti = {
+            "question":questions[0],
+            'round':queryset
+        }
+        room = Rooms(**dicti)
+
+        dicti1 = {
+            'room':room,
+            'participant':queryset1[0]
+        }
+
+        dicti2 = {
+            'room':room,
+            'participant':queryset2[0]
+        }
+        room_abs1 = RoomParticipantAbstract(**dicti1)
+        room_abs2 = RoomParticipantAbstract(**dicti2)
+        questions[0].is_assigned=True
+        room.save()
+        questions[0].save()
+        room_abs1.save()
+        room_abs2.save()
+        return Response(status=204)
+
+
+class RoomRetrieveAPIView(RetrieveAPIView):
+    queryset = Rooms.objects.all()
+    serializer_class = RoomsSerializer
+    permission_classes = [IsDSCModerator]
+    parsers = [JSONParser]
+
+
+class RoomDestroyAPIView(DestroyAPIView):
+    queryset = Rooms.objects.all()
+    serializer_class = RoomsSerializer
+    permission_classes = [IsDSCModerator]
+    parsers = [JSONParser]

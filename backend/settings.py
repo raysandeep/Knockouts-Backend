@@ -24,6 +24,7 @@ INSTALLED_APPS = [
 
     'accounts',
     'admin_portal',
+    'participants',
     
     'rest_framework',
     'rest_framework.authtoken',

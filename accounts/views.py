@@ -53,6 +53,8 @@ class UserLoginView(APIView):
         user = authenticate(username=req_data['username'], password=req_data['password'])
         if not user:
             return Response({"message":"Invalid Details"}, status=400)
+        elif user.is_blocked or user.is_disqualified:
+            return Response({"message":"You don't have access to the portal. Contact contact@dscvit.com"}, status=403)
         else:
             token, _ = Token.objects.get_or_create(user=user)
             return Response({

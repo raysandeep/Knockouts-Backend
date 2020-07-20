@@ -34,8 +34,7 @@ class RoundSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class RoomParticipantAbstractSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(source='participant.first_name')
-    last_name = serializers.CharField(source='participant.last_name')
+    first_name = serializers.CharField(source='participant.full_name')
     participant_email = serializers.EmailField(source='participant.email')
     class Meta:
         model = RoomParticipantAbstract

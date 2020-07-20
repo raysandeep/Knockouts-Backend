@@ -18,9 +18,8 @@ class RoomParticipantUpdateSerializer(serializers.ModelSerializer):
         exclude = ['end_time','start_time','is_submitted','score']
 
 class RoomParticipantAbstractSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(source='participant.first_name')
-    last_name = serializers.CharField(source='participant.last_name')
-    participant_email = serializers.EmailField(source='participant.email')
+    full_name = serializers.CharField(source='participant.full_name')
+    participant_email = serializers.EmailField(source='participant.username')
     qualification = serializers.EmailField(source='participant.is_disqualified')
     block = serializers.EmailField(source='participant.is_blocked')
     currentStatus = serializers.SerializerMethodField()

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework.generics import CreateAPIView,RetrieveAPIView,ListAPIView,UpdateAPIView
+from rest_framework.generics import CreateAPIView,RetrieveAPIView,ListAPIView,RetrieveUpdateAPIView
 from .permissions import (
     IsnotDisqualified,
     IsObjOwner
@@ -38,16 +38,11 @@ class DashBoardListAPIView(ListAPIView):
                 ).filter(room__round=round[0])
         return user_dash
 
-class CodeRetrieveAPIView(RetrieveAPIView):
-    queryset = RoomParticipantManager.objects.all()
+class CodeRetrieveAPIView(RetrieveUpdateAPIView):
+    queryset = RoomParticipantManager.objects.filter(room_seat__participant=self.request.user)
     serializer_class = RoomParticipantSerializer
     permission_classes = [IsObjOwner]
     parsers = [JSONParser]
-    lookup_url_kwarg = "pk"
-    
-    def get_queryset(self):
-        roompk = self.kwargs.get(self.lookup_url_kwarg)
-        return RoomParticipantManager.objects.filter(room_seat=roompk).filter(room_seat__participant=self.request.user)
     
     def get_serializer_class(self):
         if self.request.method == "PATCH":

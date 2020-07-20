@@ -3,7 +3,8 @@ from django.shortcuts import render
 # Create your views here.
 from rest_framework.generics import CreateAPIView,RetrieveAPIView,ListAPIView,UpdateAPIView
 from .permissions import (
-    IsnotDisqualified
+    IsnotDisqualified,
+    IsObjOwner
 )
 from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
@@ -40,14 +41,20 @@ class DashBoardListAPIView(ListAPIView):
 class CodeRetrieveAPIView(RetrieveAPIView):
     queryset = RoomParticipantManager.objects.all()
     serializer_class = RoomParticipantSerializer
-    permission_classes = [IsnotDisqualified]
+    permission_classes = [IsObjOwner]
     parsers = [JSONParser]
     lookup_url_kwarg = "pk"
-    def get_queryset(self,request):
+    
+    def get_queryset(self):
         roompk = self.kwargs.get(self.lookup_url_kwarg)
         return RoomParticipantManager.objects.filter(id=roompk).filter(room_seat__participant=self.request.user)
+    
+    def get_serializer_class(self):
+        if self.request.method == "PATCH":
+            return RoomParticipantUpdateSerializer
+        return RoomParticipantSerializer
 
-class CodeUpdateAPIView(UpdateAPIView,CreateAPIView):
+class CodeCreateAPIView(CreateAPIView):
     queryset = RoomParticipantManager.objects.all()
     serializer_class = RoomParticipantUpdateSerializer
     permission_classes = [IsnotDisqualified]
@@ -55,7 +62,6 @@ class CodeUpdateAPIView(UpdateAPIView,CreateAPIView):
         id = ''
         if self.request.data['id']:
             id = self.request.data['id']
-    
         return RoomParticipantManager.objects.filter(room_seat__participant=self.request.user).filter(room_seat__id=id)
 
 

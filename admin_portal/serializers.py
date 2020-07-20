@@ -35,7 +35,7 @@ class RoundSerializer(serializers.ModelSerializer):
 
 class RoomParticipantAbstractSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='participant.full_name')
-    participant_email = serializers.EmailField(source='participant.email')
+    participant_email = serializers.EmailField(source='participant.username')
     class Meta:
         model = RoomParticipantAbstract
         exclude = ['room']

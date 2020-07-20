@@ -47,7 +47,7 @@ class CodeRetrieveAPIView(RetrieveAPIView):
     
     def get_queryset(self):
         roompk = self.kwargs.get(self.lookup_url_kwarg)
-        return RoomParticipantManager.objects.filter(id=roompk).filter(room_seat__participant=self.request.user)
+        return RoomParticipantManager.objects.filter(room_seat=roompk).filter(room_seat__participant=self.request.user)
     
     def get_serializer_class(self):
         if self.request.method == "PATCH":

@@ -39,8 +39,7 @@ class DashBoardListAPIView(ListAPIView):
         return user_dash
 
 class CodeRetrieveAPIView(RetrieveUpdateAPIView):
-    queryset = RoomParticipantManager.objects.filter(room_seat__participant=self.request.user)
-    serializer_class = RoomParticipantSerializer
+    queryset = RoomParticipantManager.objects.all()
     permission_classes = [IsObjOwner]
     parsers = [JSONParser]
     

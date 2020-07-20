@@ -37,7 +37,7 @@ class DashBoardListAPIView(ListAPIView):
                 ).filter(room__round=round[0])
         return user_dash
 
-class CodeRetrieveAPIView(RetrieveAPIView,CreateAPIView):
+class CodeRetrieveAPIView(RetrieveAPIView):
     queryset = RoomParticipantManager.objects.all()
     serializer_class = RoomParticipantSerializer
     permission_classes = [IsnotDisqualified]
@@ -47,7 +47,7 @@ class CodeRetrieveAPIView(RetrieveAPIView,CreateAPIView):
         roompk = self.kwargs.get(self.lookup_url_kwarg)
         return RoomParticipantManager.objects.filter(id=roompk).filter(room_seat__participant=self.request.user)
 
-class CodeUpdateAPIView(UpdateAPIView):
+class CodeUpdateAPIView(UpdateAPIView,CreateAPIView):
     queryset = RoomParticipantManager.objects.all()
     serializer_class = RoomParticipantUpdateSerializer
     permission_classes = [IsnotDisqualified]

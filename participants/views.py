@@ -19,20 +19,21 @@ from .serializers import(
     RoomParticipantSerializer,
     RoomParticipantUpdateSerializer
 )
-
+from django.utils import timezone
+import pytz
 class DashBoardListAPIView(ListAPIView):
     serializer_class = RoomParticipantAbstractSerializer
     permission_classes = [IsnotDisqualified]
     parsers = [JSONParser]
     
-    def get_queryset(self,request):
-        request_datetime = request.META.get('HTTP_DATE')
+    def get_queryset(self):
+        request_datetime = timezone.now()
         round = Rounds.objects.filter(start_time__lte=request_datetime,
                      end_time__gte=request_datetime)
         if not round.exists():
             return []
         user_dash = RoomParticipantAbstract.objects.prefetch_related('room').filter(
-            participant=request.user
+            participant=self.request.user
                 ).filter(room__round=round[0])
         return user_dash
 
@@ -42,19 +43,18 @@ class CodeRetrieveAPIView(RetrieveAPIView):
     permission_classes = [IsnotDisqualified]
     parsers = [JSONParser]
     def get_queryset(self,request):
-        return RoomParticipantManager.objects.filter(room_seat__participant=request.user)
+        return RoomParticipantManager.objects.filter(room_seat__participant=self.request.user)
 
 class CodeUpdateAPIView(UpdateAPIView):
     queryset = RoomParticipantManager.objects.all()
     serializer_class = RoomParticipantUpdateSerializer
     permission_classes = [IsnotDisqualified]
-    parsers = [JSONParser]
-    def get_queryset(self,request):
+    def get_queryset(self):
         id = ''
-        if request.data['id']:
-            id = request.data['id']
+        if self.request.data['id']:
+            id = self.request.data['id']
     
-        return RoomParticipantManager.objects.filter(room_seat__participant=request.user).filter(room_seat__id=id)
+        return RoomParticipantManager.objects.filter(room_seat__participant=self.request.user).filter(room_seat__id=id)
 
 
 # class CodeRun(APIView):

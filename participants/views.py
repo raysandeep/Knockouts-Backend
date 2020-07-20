@@ -37,7 +37,7 @@ class DashBoardListAPIView(ListAPIView):
                 ).filter(room__round=round[0])
         return user_dash
 
-class CodeRetrieveAPIView(RetrieveAPIView):
+class CodeRetrieveAPIView(RetrieveAPIView,CreateAPIView):
     queryset = RoomParticipantManager.objects.all()
     serializer_class = RoomParticipantSerializer
     permission_classes = [IsnotDisqualified]

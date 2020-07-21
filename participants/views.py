@@ -13,7 +13,9 @@ from admin_portal.models import (
     Rounds,
     RoomParticipantAbstract,
     Rooms,
-    RoomParticipantManager
+    RoomParticipantManager,
+    TestCaseSolutionLogger,
+    TestCaseHolder
 )
 from .serializers import(
     RoomParticipantAbstractSerializer,
@@ -29,8 +31,11 @@ class DashBoardListAPIView(ListAPIView):
     
     def get_queryset(self):
         request_datetime = timezone.now()
+        print(request_datetime)
         round = Rounds.objects.filter(start_time__lte=request_datetime,
                      end_time__gte=request_datetime)
+        print(round)
+        print(round.count())
         if not round.exists():
             return []
         user_dash = RoomParticipantAbstract.objects.prefetch_related('room').filter(
@@ -59,4 +64,6 @@ class CodeCreateAPIView(CreateAPIView):
         return RoomParticipantManager.objects.filter(room_seat__participant=self.request.user).filter(room_seat__id=id)
 
 
-# class CodeRun(APIView):
+# class GetCodeandTestCases(ListAPIView):
+#     quesryset = TestCaseHolder.objects.all()
+#     serializer_class = 

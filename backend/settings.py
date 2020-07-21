@@ -7,6 +7,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = config('SECRET_KEY')
 
+HOST_URL = config('HOST_URL')
+
+JUDGEAPI_URL =  config('JUDGEAPI_URL')
+
+FASTAPI_URL =  config('FASTAPI_URL')
+
 DEBUG = config('DEBUG')
 
 ALLOWED_HOSTS = []

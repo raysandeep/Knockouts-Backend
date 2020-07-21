@@ -40,7 +40,9 @@ class DashBoardListAPIView(ListAPIView):
             return []
         user_dash = RoomParticipantAbstract.objects.prefetch_related('room').filter(
             participant=self.request.user
-                ).filter(room__round=round[0])
+                ).filter(room__round__in=round)
+        print(user_dash)
+        print(user_dash.count())
         return user_dash
 
 class CodeRetrieveAPIView(RetrieveUpdateAPIView):

@@ -16,6 +16,7 @@ class QuestionsModel(models.Model):
 class TestCaseHolder(models.Model):
     id = models.UUIDField(default=uuid4,primary_key=True)
     question = models.ForeignKey(QuestionsModel,on_delete=models.CASCADE)
+    is_sample = models.BooleanField(default=False)
     stdin = models.TextField()
     stdout = models.TextField()
     max_time = models.DecimalField(max_digits=10,decimal_places=8)

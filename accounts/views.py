@@ -73,7 +73,9 @@ class AdminLoginView(APIView):
     def post(self, request):
         req_data = request.data
         user = authenticate(username=req_data['username'], password=req_data['password'])
-        if not user.is_admin:
+        if not user:
+            return Response({"message":"Invalid Details"}, status=400)
+        elif not user.is_admin:
             return Response({"message":"Invalid Details"}, status=400)
         else:
             token, _ = Token.objects.get_or_create(user=user)

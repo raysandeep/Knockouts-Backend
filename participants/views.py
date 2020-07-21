@@ -15,15 +15,19 @@ from admin_portal.models import (
     Rooms,
     RoomParticipantManager,
     TestCaseSolutionLogger,
-    TestCaseHolder
+    TestCaseHolder,
+    QuestionsModel
 )
 from .serializers import(
     RoomParticipantAbstractSerializer,
     RoomParticipantSerializer,
-    RoomParticipantUpdateSerializer
+    RoomParticipantUpdateSerializer,
+    QuestionSerializer,
+    QuestionAdminSerializer
 )
 from django.utils import timezone
 import pytz
+from rest_framework.permissions import IsAdminUser
 
 
 class DashBoardListAPIView(ListAPIView):
@@ -68,6 +72,21 @@ class CodeCreateAPIView(CreateAPIView):
         return RoomParticipantManager.objects.filter(room_seat__participant=self.request.user).filter(room_seat__id=id)
 
 
-# class GetCodeandTestCases(ListAPIView):
-#     quesryset = TestCaseHolder.objects.all()
-#     serializer_class = 
+class QuestionAndTestCaseGETAPIView(RetrieveAPIView):
+    queryset = QuestionsModel.objects.filter()
+    serializer_class = QuestionSerializer
+    permission_classes = [IsObjOwner]
+    parsers = [JSONParser]
+
+class CodeRetrieveAPIView(RetrieveAPIView):
+    queryset = RoomParticipantManager.objects.all()
+    permission_classes = [IsAdminUser]
+    parsers = [JSONParser]
+    serializer_class = RoomParticipantSerializer
+
+
+class TestCaseAPIView(RetrieveAPIView):
+    queryset = QuestionsModel.objects.all()
+    permission_classes = [IsAdminUser]
+    parsers = [JSONParser]
+    serializer_class = QuestionAdminSerializer

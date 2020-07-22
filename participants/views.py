@@ -27,7 +27,7 @@ from .serializers import(
 )
 from django.utils import timezone
 import pytz
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from django.conf import settings
 
 
@@ -302,7 +302,7 @@ class CodeCreateAPIView(CreateAPIView):
 class QuestionAndTestCaseGETAPIView(RetrieveAPIView):
     queryset = QuestionsModel.objects.filter()
     serializer_class = QuestionSerializer
-    permission_classes = [IsObjOwner]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     parsers = [JSONParser]
 
 class CodeRetrieveAPIView(RetrieveAPIView):

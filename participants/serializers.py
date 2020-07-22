@@ -19,7 +19,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = ['id','question_title','question','testcases']
 
     def get_testcases(self,obj):
-        return TestCaseSerializer(TestCaseHolder.objects.filter(question=obj.id).filter(is_sample=True)).data
+        return TestCaseSerializer(TestCaseHolder.objects.filter(question=obj.id).filter(is_sample=True),many=True).data
 
 class RoomParticipantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -56,4 +56,4 @@ class QuestionAdminSerializer(serializers.ModelSerializer):
         fields = ['id','question_title','question','testcases']
 
     def get_tescases(self,obj):
-        return TestCaseSerializer(TestCaseHolder.objects.filter(question=obj.id)).data
+        return TestCaseSerializer(TestCaseHolder.objects.filter(question=obj.id),many=True).data

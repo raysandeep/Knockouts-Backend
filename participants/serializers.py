@@ -17,7 +17,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     testcases = serializers.SerializerMethodField()
     class Meta:
         model = QuestionsModel
-        fields = ['id','question_title','question']
+        fields = ['id','question_title','question','testcases']
 
     def get_testcases(self,obj):
         return TestCaseSerializer(TestCaseHolder.objects.filter(question=obj.id).filter(is_sample=True)).data

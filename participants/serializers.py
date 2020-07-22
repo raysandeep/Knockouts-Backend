@@ -8,7 +8,6 @@ from admin_portal.models import(
 )
 
 class TestCaseSerializer(serializers.ModelSerializer):
-    testcases = serializers.SerializerMethodField()
     class Meta:
         model = TestCaseHolder
         exclude = ['question']

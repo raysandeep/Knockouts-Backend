@@ -19,7 +19,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         model = QuestionsModel
         fields = ['id','question_title','question']
 
-    def get_tescases(self,obj):
+    def get_testcases(self,obj):
         return TestCaseSerializer(TestCaseHolder.objects.filter(question=obj.id).filter(is_sample=True)).data
 
 class RoomParticipantSerializer(serializers.ModelSerializer):

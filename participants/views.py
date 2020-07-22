@@ -305,18 +305,6 @@ class QuestionAndTestCaseGETAPIView(RetrieveAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     parsers = [JSONParser]
 
-class CodeRetrieveAPIView(RetrieveAPIView):
-    queryset = RoomParticipantManager.objects.all()
-    permission_classes = [IsAdminUser]
-    parsers = [JSONParser]
-    serializer_class = RoomParticipantSerializer
-
-
-class TestCaseAPIView(RetrieveAPIView):
-    queryset = QuestionsModel.objects.all()
-    permission_classes = [IsAdminUser]
-    parsers = [JSONParser]
-    serializer_class = QuestionAdminSerializer
 
 
 class TestCaseSolutionLogger(RetrieveAPIView):

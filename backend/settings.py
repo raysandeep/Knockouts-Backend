@@ -141,7 +141,8 @@ CORS_ALLOW_HEADERS = [
     'X-Requested-With',
 ]
 
-
+TIME_MULTIPLY_CONSTANT = 0.1
+MARKS_FOR_EACH_QUES = 10
 
 CACHES = {
     "default": {

@@ -31,6 +31,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from django.conf import settings
 
 from django.core.cache import cache
+from accounts.models import User
 
 SAMPLE_JSON = {
     "data": [{
@@ -318,6 +319,8 @@ class TestCaseSolutionLogger(RetrieveAPIView):
     serializer_class = QuestionAdminSerializer
 
 class CallBackHandler(APIView):
+    parsers = [JSONParser]
+    
     def put(self,request,roomabsid,testid):
         data = request.data
         room = RoomParticipantAbstract.objects.filter(id=roomabsid)
@@ -344,6 +347,9 @@ class CallBackHandler(APIView):
         return Response(status=200)
 
 class SubmitQuestion(APIView):
+    permission_classes = [IsnotDisqualified]
+    parsers = [JSONParser]
+
     def post(self,request):
         try:
             id = request.data["id"]
@@ -366,7 +372,7 @@ class SubmitQuestion(APIView):
             if not question.exists():
                 return Response(status=400)
             #get testcases now
-            test_cases = TestCaseHolder.objects.filter(question=question[0])
+            test_cases = TestCaseHolder.objects.filter(question=question[0]).filter(is_sample=False)
             time_limit = getTimeLimit(language_id)
             BASE_URL = settings.HOST_URL+"/participant/callback/"+id+"/"
             for i in test_cases:
@@ -389,3 +395,116 @@ class SubmitQuestion(APIView):
                 'tokens':tokens
             },status=200)
 
+
+class CheckSubmissions(APIView):
+    permission_classes = [IsnotDisqualified]
+    parsers = [JSONParser]
+    
+    def post(self,request):
+        try:
+            id = request.data["room_seat"]
+            question_id = request.data["question_id"]
+            room_seat = request.data["id"]
+        except:
+            return Response(status=400)
+        total_rooms = RoomParticipantAbstract.objects.all()
+        room = total_rooms.filter(id=id)
+        if not room.exists():
+            return Response(status=400)
+        else:
+            room = room[0]
+            question = QuestionsModel.objects.filter(id=question_id)
+            if not question.exists():
+                return Response(status=400)
+            allseat = RoomParticipantManager.objects.prefetch_related('room_seat').all() #room_seat
+            seat = allseat.filter(room_seat=room_seat)
+            if not seat.exists():
+                return Response(status=400)
+            
+            
+            # Testcases
+            root_testcases = TestCaseHolder.objects.filter(question[0].id).filter(is_sample=False)
+            testcases = TestCaseSolutionLogger.objects.prefetch_related('participant').filter(room_solution=id).filter(participant=request.user)
+            testcases_solved = testcases.count()
+            total_testcases = root_testcases.count()
+            #duration calculation
+            duration = (seat[0].end_time -seat[0].start_time)
+            duration_in_s = duration.total_seconds()
+            duration_in_m = divmod(duration_in_s, 60)
+            if duration_in_m>60:
+                score_reduction=duration_in_m*settings.TIME_MULTIPLY_CONSTANT
+            else:
+                score_reduction = 0
+
+            total_score = (testcases_solved*settings.MARKS_FOR_EACH_QUES) - score_reduction
+            seat[0].score = total_score
+
+            if testcases_solved==total_testcases:
+                #he solved everything 
+                opponent =  allseat.filter(room_seat__room=room.room).exclude(room_seat__participant=request.user)
+                seat[0].is_submitted = True
+                if opponent.exists():
+                    opponent = opponent[0]
+                    opponent_status = opponent.is_submitted 
+                    if opponent_status:
+                        if opponent.score >= total_score:
+                            user = request.user
+                            user.is_disqualified = True
+                            seat[0].save()
+                            return Response({
+                                'status':'All test cases passed',
+                                'score':total_score,
+                                'testcases':testcases_solved,
+                                "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
+                                "total_time":duration_in_m,
+                                "time_score_reduction":score_reduction,
+                                "overallstatus":"Disqualified"
+                            },status=200)
+                        else:
+                            seat[0].save()
+                            user = User.objects.filter(id=opponent.room_seat.participant)
+                            user.is_disqualified = True
+                            return Response({
+                                'status':'All test cases passed',
+                                'score':total_score,
+                                'testcases':testcases_solved,
+                                "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
+                                "total_time":duration_in_m,
+                                "time_score_reduction":score_reduction,
+                                "overallstatus":"Qualified! We will share you further information!"
+                            },status=200)
+                    else:
+                        seat[0].save()
+                        return Response({
+                                'status':'All test cases passed',
+                                'score':total_score,
+                                'testcases':testcases_solved,
+                                "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
+                                "total_time":duration_in_m,
+                                "time_score_reduction":score_reduction,
+                                "overallstatus":"Your'e opponent didn't submit his test yet please wait!"
+                            },status=200)
+                else:
+                    seat[0].save()
+                    return Response({
+                            'status':'All test cases passed',
+                            'score':total_score,
+                            'testcases':testcases_solved,
+                            "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
+                            "total_time":duration_in_m,
+                            "time_score_reduction":score_reduction,
+                            "overallstatus":"Your'e opponent didn't submit his test yet please wait!"
+                        },status=200)
+                        
+            else:
+                seat[0].save()
+                return Response({
+                            'status':'Partially solved',
+                            'score':total_score,
+                            'testcases':testcases_solved,
+                            "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
+                            "testcases_left":total_testcases - testcases_solved,
+                            "total_time":duration_in_m,
+                            "time_score_reduction":score_reduction,
+                            "overallstatus":"Your'e opponent didn't submit his test yet please wait!"
+                        },status=206)

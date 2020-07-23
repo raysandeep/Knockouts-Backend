@@ -377,7 +377,7 @@ class SubmitQuestion(APIView):
                     "expected_output":i.stdout,
                     "memory_limit":i.max_memory,
                     "callback_url":BASE_URL+str(i.id),
-                    "cpu_time_limit":time_limit*i.max_time,
+                    "cpu_time_limit":decimal.Decimal(time_limit)*i.max_time,
                 })      
             #make data for sending it xD
             data = {

@@ -54,7 +54,7 @@ class RoomParticipantManager(models.Model):
 
 class TestCaseSolutionLogger(models.Model):
     id = models.UUIDField(default=uuid4,primary_key=True)
-    room_solution = models.ForeignKey(RoomParticipantAbstract,on_delete=models.CASCADE)
+    room_solution = models.ForeignKey(RoomParticipantManager,on_delete=models.CASCADE)
     test_case = models.ForeignKey(TestCaseHolder,on_delete=models.CASCADE)
     stdin = models.TextField(null=True)
     stdout = models.TextField(null=True)

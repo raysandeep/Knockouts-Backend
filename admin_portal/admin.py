@@ -7,7 +7,8 @@ from .models import (
     RoomParticipantAbstract,
     RoomParticipantManager,
     Rooms,
-    Rounds
+    Rounds,
+    TestCaseSolutionLogger
 )
 
 
@@ -17,3 +18,4 @@ admin.site.register(RoomParticipantAbstract)
 admin.site.register(RoomParticipantManager)
 admin.site.register(Rooms)
 admin.site.register(Rounds)
+admin.site.register(TestCaseSolutionLogger)

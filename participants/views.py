@@ -27,13 +27,12 @@ from .serializers import(
 )
 from django.utils import timezone
 import pytz
-from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly, AllowAny
 from django.conf import settings
 import decimal
 from django.core.cache import cache
 from accounts.models import User
 import requests as rq
-
 import base64 
 
 SAMPLE_JSON = {
@@ -326,6 +325,8 @@ def dobase64decode(tobedecoded):
 
 class CallBackHandler(APIView):
     parsers = [JSONParser]
+    permission_classes = [AllowAny]
+
     
     def put(self,request,roomabsid,testid):
         data = request.data

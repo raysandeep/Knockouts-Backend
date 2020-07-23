@@ -375,7 +375,7 @@ class SubmitQuestion(APIView):
                     "source_code":current_code,
                     "stdin":i.stdin,
                     "expected_output":i.stdout,
-                    "memory_limit":i.memory,
+                    "memory_limit":i.max_memory,
                     "callback_url":BASE_URL+i.id,
                     "cpu_time_limit":time_limit*i.max_time,
                 })      

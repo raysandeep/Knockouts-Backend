@@ -376,7 +376,7 @@ class SubmitQuestion(APIView):
                     "stdin":i.stdin,
                     "expected_output":i.stdout,
                     "memory_limit":i.max_memory,
-                    "callback_url":BASE_URL+i.id,
+                    "callback_url":BASE_URL+str(i.id),
                     "cpu_time_limit":time_limit*i.max_time,
                 })      
             #make data for sending it xD

@@ -219,7 +219,7 @@ SAMPLE_JSON = {
 
 
 def getTimeLimit(id):
-    for i in SAMPLE_JSON:
+    for i in SAMPLE_JSON["data"]:
         if i["id"] == id:
             return i["time"]
 

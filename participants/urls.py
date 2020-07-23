@@ -7,5 +7,6 @@ urlpatterns = [
     path('question/<pk>',views.QuestionAndTestCaseGETAPIView.as_view()),
     path('callback/<str:roomabsid>/<str:testid>',views.CallBackHandler.as_view()),
     path('submit',views.SubmitQuestion.as_view()),
+    path('submit/validate/',views.CheckSubmissions.as_view())
 
 ]

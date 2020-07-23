@@ -312,12 +312,6 @@ class QuestionAndTestCaseGETAPIView(RetrieveAPIView):
 
 
 
-class TestCaseSolutionLogger(RetrieveAPIView):
-    queryset = QuestionsModel.objects.all()
-    permission_classes = [IsAdminUser]
-    parsers = [JSONParser]
-    serializer_class = QuestionAdminSerializer
-
 class CallBackHandler(APIView):
     parsers = [JSONParser]
     

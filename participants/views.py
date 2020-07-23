@@ -255,10 +255,10 @@ def sendTriggertofastapi(room_name):
     return False
 
 def sendRedis(room_name,token,status):
-    count = int(cache.get(room_id+"__count"))-1
+    count = int(cache.get(room_name+"__count"))-1
     
-    ttl = cache.ttl(room_id+"__count")
-    cache.set(room_id+"__count",str(count),timeout=ttl)
+    ttl = cache.ttl(room_name+"__count")
+    cache.set(room_name+"__count",str(count),timeout=ttl)
     
     if count==0:
         sendTriggertofastapi(room_name)

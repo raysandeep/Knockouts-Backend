@@ -232,12 +232,15 @@ def sendRequest(data,room_id):
         }
     response = rq.request("POST", settings.JUDGEAPI_URL, headers=headers, json = data)
     tokens = []
+    print(response.status_code)
     if response.status_code == 201:
         for i in response.json():
             tokens.append(i["token"])
-        tokens = tokens[:-1]
+        print(tokens)
         if cache.set(room_id+"__count",str(len(tokens)),timeout=60*5):
+            print("True")
             return True,tokens
+        
     return False,[]
 
 def sendTriggertofastapi(room_name):

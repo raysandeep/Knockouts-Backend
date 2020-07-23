@@ -423,15 +423,18 @@ class CheckSubmissions(APIView):
         total_rooms = RoomParticipantAbstract.objects.all()
         room = total_rooms.filter(id=room_seat)
         if not room.exists():
+            print("a")
             return Response(status=400)
         else:
             room = room[0]
             question = QuestionsModel.objects.filter(id=question_id)
             if not question.exists():
+                print("b")
                 return Response(status=400)
             allseat = RoomParticipantManager.objects.prefetch_related('room_seat').all() #room_seat
             seat = allseat.filter(room_seat=room).filter(id=id)
             if not seat.exists():
+                print("c")
                 return Response(status=400)
             
             
@@ -446,11 +449,11 @@ class CheckSubmissions(APIView):
             duration_in_s = duration.total_seconds()
             duration_in_m = divmod(duration_in_s, 60)[0]
             if duration_in_m>60:
-                score_reduction=duration_in_m*settings.TIME_MULTIPLY_CONSTANT
+                score_reduction=(duration_in_m-60)*settings.TIME_MULTIPLY_CONSTANT
             else:
                 score_reduction = 0
 
-            total_score = (testcases_solved*settings.MARKS_FOR_EACH_QUES) - score_reduction
+            total_score = (testcases_solved*settings.MARKS_FOR_EACH_QUES) - math.ceil(score_reduction)
             seat[0].score = total_score
 
             if testcases_solved==total_testcases:

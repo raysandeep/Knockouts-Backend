@@ -34,6 +34,8 @@ from django.core.cache import cache
 from accounts.models import User
 import requests as rq
 
+import base64 
+
 SAMPLE_JSON = {
     "data": [{
             "id": 46,
@@ -316,6 +318,11 @@ class QuestionAndTestCaseGETAPIView(RetrieveAPIView):
     parsers = [JSONParser]
 
 
+def dobase64encode(tobeencoded):
+    return base64.b64encode(tobeencoded.encode("ascii")).decode("ascii")
+
+def dobase64decode(tobedecoded):
+    return  base64.b64decode(tobedecoded.encode("ascii")).decode("ascii") 
 
 class CallBackHandler(APIView):
     parsers = [JSONParser]
@@ -332,10 +339,10 @@ class CallBackHandler(APIView):
             'room_solution':room[0],
             'test_case':test_case[0],
             'stdin':test_case[0].stdin,
-            'stdout':data['stdout'],
+            'stdout':dobase64decode(data['stdout']),
             'time':data['time'],
             'memory':data['memory'],
-            'error':data['compile_output'],
+            'error':dobase64decode(data['stderr']),
             'token':data['token'],
             'is_solved':status
         }
@@ -344,6 +351,9 @@ class CallBackHandler(APIView):
 
         sendRedis(roomabsid,data['token'],status)
         return Response(status=200)
+
+
+
 
 class SubmitQuestion(APIView):
     permission_classes = [IsnotDisqualified]
@@ -374,13 +384,17 @@ class SubmitQuestion(APIView):
             test_cases = TestCaseHolder.objects.filter(question=question[0]).filter(is_sample=False)
             time_limit = getTimeLimit(language_id)
             BASE_URL = settings.HOST_URL+"/participant/callback/"+id+"/"
+            current_code = base64.b64encode(current_code.encode("ascii")).decode("ascii")
+
             for i in test_cases:
+                sample_string = "GeeksForGeeks is the best"
+
                 my_list.append({
                     "language_id":language_id,
                     "source_code":current_code,
-                    "stdin":i.stdin,
-                    "expected_output":i.stdout,
-                    "memory_limit":i.max_memory,
+                    "stdin":dobase64encode(i.stdin),
+                    "expected_output":dobase64encode(i.stdout),
+                    "memory_limit":i.max_memory*1024,
                     "callback_url":BASE_URL+str(i.id),
                     "cpu_time_limit":time_limit*float(i.max_time),
                 })      

@@ -421,7 +421,7 @@ class CheckSubmissions(APIView):
         except:
             return Response(status=400)
         total_rooms = RoomParticipantAbstract.objects.all()
-        room = total_rooms.filter(id=id)
+        room = total_rooms.filter(id=room_seat)
         if not room.exists():
             return Response(status=400)
         else:
@@ -430,7 +430,7 @@ class CheckSubmissions(APIView):
             if not question.exists():
                 return Response(status=400)
             allseat = RoomParticipantManager.objects.prefetch_related('room_seat').all() #room_seat
-            seat = allseat.filter(room_seat=room)
+            seat = allseat.filter(room_seat=room).filter(id=id)
             if not seat.exists():
                 return Response(status=400)
             

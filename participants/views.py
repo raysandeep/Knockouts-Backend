@@ -454,7 +454,7 @@ class CheckSubmissions(APIView):
             #duration calculation
             duration = (seat[0].end_time -seat[0].start_time)
             duration_in_s = duration.total_seconds()
-            duration_in_m = divmod(duration_in_s, 60)
+            duration_in_m = divmod(duration_in_s, 60)[0]
             if duration_in_m>60:
                 score_reduction=duration_in_m*settings.TIME_MULTIPLY_CONSTANT
             else:

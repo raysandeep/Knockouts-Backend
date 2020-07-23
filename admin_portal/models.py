@@ -43,7 +43,7 @@ class RoomParticipantAbstract(models.Model):
 
 class RoomParticipantManager(models.Model):
     id = models.UUIDField(default=uuid4,primary_key=True)
-    room_seat = models.ForeignKey(RoomParticipantAbstract,on_delete=models.CASCADE)
+    room_seat = models.OneToOneField(RoomParticipantAbstract,on_delete=models.CASCADE)
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(auto_now=True)
     current_code = models.TextField()

@@ -437,7 +437,7 @@ class CheckSubmissions(APIView):
             
             # Testcases
             root_testcases = TestCaseHolder.objects.filter(question=question[0].id).filter(is_sample=False)
-            testcases = TestCaseSolutionLogger.objects.filter(room_solution=seat).filter(is_solved=True)
+            testcases = TestCaseSolutionLogger.objects.filter(room_solution=seat[0]).filter(is_solved=True)
             testcases_solved = testcases.count()
             print("TestCases Solved :",str(testcases_solved))
             total_testcases = root_testcases.count()

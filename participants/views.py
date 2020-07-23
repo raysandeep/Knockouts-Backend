@@ -30,6 +30,7 @@ import pytz
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from django.conf import settings
 
+from django.core.cache import cache
 
 SAMPLE_JSON = {
     "data": [{
@@ -228,34 +229,37 @@ def sendRequest(data,room_id):
         'Content-Type': 'application/json'
         }
     response = rq.request("POST", settings.JUDGEAPI_URL, headers=headers, json = data)
-    tokens = ''
+    tokens = []
     if response.status_code == 201:
         for i in response.json():
-            tokens += i["token"] + ','
+            tokens.append(i["token"])
         tokens = tokens[:-1]
-        print(tokens)
-        if sendFastAPITrigger(room_id,tokens):
+        if cache.set(room_id+"__count",str(len(tokens)),timeout=60*5):
             return True,tokens
-    return False,''
+    return False,[]
 
-
-def sendFastAPITrigger(room_name):
+def sendTriggertofastapi(room_name):
     headers = {
         'Content-Type': 'application/json'
         }
-    response = rq.request("GET", settings.FASTAPI_URL+'trigger/'+room_name+'/'+tokens)
+    response = rq.request("GET", settings.FASTAPI_URL+'trigger/'+room_name)
     if response.status_code == 200:
         return True
     return False
 
-def sendFastAPITriggerforproblem(room_name,token,status):
-    headers = {
-        'Content-Type': 'application/json'
-        }
-    response = rq.request("GET", settings.FASTAPI_URL+'trigger1/'+room_name+'/'+token+'/'+status)
-    if response.status_code == 200:
-        return True
-    return False
+def sendRedis(room_name,token,status):
+    count = int(cache.get(room_id+"__count"))-1
+    
+    ttl = cache.ttl(room_id+"__count")
+    cache.set(room_id+"__count",str(count),timeout=ttl)
+    
+    if count==0:
+        sendTriggertofastapi(room_name)
+
+    return True
+
+
+
 
 class DashBoardListAPIView(ListAPIView):
     serializer_class = RoomParticipantAbstractSerializer
@@ -313,12 +317,6 @@ class TestCaseSolutionLogger(RetrieveAPIView):
     parsers = [JSONParser]
     serializer_class = QuestionAdminSerializer
 
-class IntiateSubmitQuestion(APIView):
-    def get(self,request,id):
-        testcases = TestCaseSolutionLogger.objects.prefetch_related('participant').filter(room_solution=id).filter(participant=request.user)
-        testcases.delete()
-        return Response(status=204)
-        
 class CallBackHandler(APIView):
     def put(self,request,roomabsid,testid):
         data = request.data
@@ -342,8 +340,8 @@ class CallBackHandler(APIView):
         testcase = TestCaseSolutionLogger(**dicti)
         testcase.save()
 
-        sendFastAPITriggerforproblem(roomabsid,data['token'],status)
-        pass
+        sendRedis(roomabsid,data['token'],status)
+        return Response(status=200)
 
 class SubmitQuestion(APIView):
     def post(self,request):
@@ -353,6 +351,8 @@ class SubmitQuestion(APIView):
         except:
             return Response(status=400)
         #get room
+        testcases = TestCaseSolutionLogger.objects.prefetch_related('participant').filter(room_solution=id).filter(participant=request.user)
+        testcases.delete()
         room = RoomParticipantAbstract.objects.filter(id=id)
         if not room.exists():
             return Response(status=400)
@@ -383,8 +383,9 @@ class SubmitQuestion(APIView):
             data = {
                 "submissions":my_list
                 }
-            sendRequest(data,id)
+            status,tokens = sendRequest(data,id)
             return Response({
-                'status':'Started Submission'
+                'status':status,
+                'tokens':tokens
             },status=200)
 

@@ -3,6 +3,7 @@ from decouple import config
 import django_heroku
 
 
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = config('SECRET_KEY')
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
     
     'rest_framework',
     'rest_framework.authtoken',
+    'django_redis'
 
 ]
 
@@ -140,6 +142,16 @@ CORS_ALLOW_HEADERS = [
 ]
 
 
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": config("REDIS_URL"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
 
 django_heroku.settings(locals())

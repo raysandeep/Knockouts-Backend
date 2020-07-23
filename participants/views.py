@@ -34,7 +34,6 @@ from django.core.cache import cache
 from accounts.models import User
 import requests as rq
 import base64 
-
 SAMPLE_JSON = {
     "data": [{
             "id": 46,
@@ -426,19 +425,24 @@ class CheckSubmissions(APIView):
             question_id = request.data["question_id"]
             room_seat = request.data["id"]
         except:
+            print("1")
             return Response(status=400)
         total_rooms = RoomParticipantAbstract.objects.all()
         room = total_rooms.filter(id=id)
         if not room.exists():
+            print("2")
             return Response(status=400)
         else:
             room = room[0]
             question = QuestionsModel.objects.filter(id=question_id)
             if not question.exists():
+                print("3")
+
                 return Response(status=400)
             allseat = RoomParticipantManager.objects.prefetch_related('room_seat').all() #room_seat
             seat = allseat.filter(room_seat=room_seat)
             if not seat.exists():
+                print("4")
                 return Response(status=400)
             
             

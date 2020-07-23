@@ -440,7 +440,7 @@ class CheckSubmissions(APIView):
 
                 return Response(status=400)
             allseat = RoomParticipantManager.objects.prefetch_related('room_seat').all() #room_seat
-            seat = allseat.filter(room_seat=room_seat)
+            seat = allseat.filter(room_seat=room)
             if not seat.exists():
                 print("4")
                 return Response(status=400)

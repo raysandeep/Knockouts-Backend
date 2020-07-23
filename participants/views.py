@@ -318,10 +318,16 @@ class QuestionAndTestCaseGETAPIView(RetrieveAPIView):
 
 
 def dobase64encode(tobeencoded):
-    return base64.b64encode(tobeencoded.encode("ascii")).decode("ascii")
+    if tobeencoded == '':
+        return 'null'
+    else:
+        return base64.b64encode(tobeencoded.encode("ascii")).decode("ascii")
 
 def dobase64decode(tobedecoded):
-    return  base64.b64decode(tobedecoded.encode("ascii")).decode("ascii") 
+    if tobedecoded == "null":
+        return "NULL"
+    else:
+        return  base64.b64decode(tobedecoded.encode("ascii")).decode("ascii") 
 
 class CallBackHandler(APIView):
     parsers = [JSONParser]

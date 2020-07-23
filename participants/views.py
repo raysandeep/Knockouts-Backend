@@ -375,7 +375,7 @@ class SubmitQuestion(APIView):
             BASE_URL = settings.HOST_URL+"/participant/callback/"+id+"/"
             for i in test_cases:
                 my_list.append({
-                    "lanuguage_id":language_id,
+                    "language_id":language_id,
                     "source_code":current_code,
                     "stdin":i.stdin,
                     "expected_output":i.stdout,

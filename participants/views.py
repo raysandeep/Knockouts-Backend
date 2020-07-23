@@ -421,7 +421,7 @@ class CheckSubmissions(APIView):
         except:
             return Response(status=400)
         total_rooms = RoomParticipantAbstract.objects.all()
-        room = total_rooms.filter(id=room_seat)
+        room = total_rooms.filter(id=id)
         if not room.exists():
             print("a")
             return Response(status=400)

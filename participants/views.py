@@ -330,7 +330,7 @@ class CallBackHandler(APIView):
     
     def put(self,request,roomabsid,testid):
         data = request.data
-        room = RoomParticipantAbstract.objects.filter(id=roomabsid)
+        room = RoomParticipantManager.objects.filter(id=roomabsid)
         test_case = TestCaseHolder.objects.filter(id=testid)
         status=False
         if data['status']['id'] == 3:
@@ -388,7 +388,6 @@ class SubmitQuestion(APIView):
             current_code = base64.b64encode(current_code.encode("ascii")).decode("ascii")
 
             for i in test_cases:
-                sample_string = "GeeksForGeeks is the best"
 
                 my_list.append({
                     "language_id":language_id,

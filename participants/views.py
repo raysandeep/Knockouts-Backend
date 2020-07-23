@@ -32,6 +32,7 @@ from django.conf import settings
 import decimal
 from django.core.cache import cache
 from accounts.models import User
+import requests as rq
 
 SAMPLE_JSON = {
     "data": [{

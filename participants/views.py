@@ -29,7 +29,7 @@ from django.utils import timezone
 import pytz
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly, AllowAny
 from django.conf import settings
-import decimal
+import math
 from django.core.cache import cache
 from accounts.models import User
 import requests as rq
@@ -237,11 +237,8 @@ def sendRequest(data,room_id):
     if response.status_code == 201:
         for i in response.json():
             tokens.append(i["token"])
-        print(tokens)
         if cache.set(room_id+"__count",str(len(tokens)),timeout=60*5):
-            print("True")
             return True,tokens
-    print(response.text)
     return False,[]
 
 def sendTriggertofastapi(room_name):
@@ -274,18 +271,13 @@ class DashBoardListAPIView(ListAPIView):
     
     def get_queryset(self):
         request_datetime = timezone.now()
-        print(request_datetime)
         round = Rounds.objects.filter(start_time__lte=request_datetime,
                      end_time__gte=request_datetime)
-        print(round)
-        print(round.count())
         if not round.exists():
             return []
         user_dash = RoomParticipantAbstract.objects.prefetch_related('room').filter(
             participant=self.request.user
                 ).filter(room__round__in=round)
-        print(user_dash)
-        print(user_dash.count())
         return user_dash
 
 class CodeRetrieveAPIView(RetrieveUpdateAPIView):
@@ -352,6 +344,8 @@ class CallBackHandler(APIView):
             'token':data['token'],
             'is_solved':status
         }
+
+        print(dicti)
         testcase = TestCaseSolutionLogger(**dicti)
         testcase.save()
 
@@ -407,7 +401,6 @@ class SubmitQuestion(APIView):
             data = {
                 "submissions":my_list
                 }
-            print(data)
             status,tokens = sendRequest(data,id)
             return Response({
                 'status':status,
@@ -425,24 +418,19 @@ class CheckSubmissions(APIView):
             question_id = request.data["question_id"]
             room_seat = request.data["id"]
         except:
-            print("1")
             return Response(status=400)
         total_rooms = RoomParticipantAbstract.objects.all()
         room = total_rooms.filter(id=id)
         if not room.exists():
-            print("2")
             return Response(status=400)
         else:
             room = room[0]
             question = QuestionsModel.objects.filter(id=question_id)
             if not question.exists():
-                print("3")
-
                 return Response(status=400)
             allseat = RoomParticipantManager.objects.prefetch_related('room_seat').all() #room_seat
             seat = allseat.filter(room_seat=room)
             if not seat.exists():
-                print("4")
                 return Response(status=400)
             
             

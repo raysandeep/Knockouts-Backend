@@ -332,7 +332,8 @@ class CallBackHandler(APIView):
         status=False
         if data['status']['id'] == 3:
             status = True
-        print(data)
+        # print(data)
+        print(data['status']['id'])
         dicti = {
             'room_solution':room[0],
             'test_case':test_case[0],
@@ -344,8 +345,8 @@ class CallBackHandler(APIView):
             'token':data['token'],
             'is_solved':status
         }
-
-        # print(dicti)
+        
+        print(dicti)
         testcase = TestCaseSolutionLogger(**dicti)
         testcase.save()
 

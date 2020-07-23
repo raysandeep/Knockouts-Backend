@@ -318,13 +318,13 @@ class QuestionAndTestCaseGETAPIView(RetrieveAPIView):
 
 
 def dobase64encode(tobeencoded):
-    if tobeencoded == '':
+    if tobeencoded is None:
         return 'null'
     else:
         return base64.b64encode(tobeencoded.encode("ascii")).decode("ascii")
 
 def dobase64decode(tobedecoded):
-    if tobedecoded == "null":
+    if tobedecoded is None:
         return "NULL"
     else:
         return  base64.b64decode(tobedecoded.encode("ascii")).decode("ascii") 

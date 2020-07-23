@@ -351,7 +351,7 @@ class SubmitQuestion(APIView):
         except:
             return Response(status=400)
         #get room
-        testcases = TestCaseSolutionLogger.objects.filter(room_solution=id).filter(room_solution__room_seat__participant=request.user)
+        testcases = TestCaseSolutionLogger.objects.filter(room_solution=id)
         testcases.delete()
         room = RoomParticipantAbstract.objects.filter(id=id)
         if not room.exists():

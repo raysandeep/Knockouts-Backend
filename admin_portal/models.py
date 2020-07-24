@@ -21,6 +21,7 @@ class TestCaseHolder(models.Model):
     stdout = models.TextField()
     max_time = models.DecimalField(max_digits=10,decimal_places=8)
     max_memory = models.IntegerField(default=0)
+    score = models.IntegerField(default=10)
 
 
 class Rounds(models.Model):
@@ -63,3 +64,4 @@ class TestCaseSolutionLogger(models.Model):
     error = models.CharField(max_length=500,null=True)
     token = models.CharField(max_length=100)
     is_solved = models.BooleanField(default=False)
+    score_for_this_testcase = models.IntegerField(default=0)

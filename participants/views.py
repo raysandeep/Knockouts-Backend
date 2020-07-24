@@ -34,6 +34,7 @@ from django.core.cache import cache
 from accounts.models import User
 import requests as rq
 import base64 
+from django.db.models import Sum
 SAMPLE_JSON = {
     "data": [{
             "id": 46,
@@ -343,7 +344,8 @@ class CallBackHandler(APIView):
             'memory':data['memory'],
             'error':dobase64decode(data['stderr']),
             'token':data['token'],
-            'is_solved':status
+            'is_solved':status,
+            "score_for_this_testcase":test_case[0].score
         }
         
         print(dicti)
@@ -442,6 +444,7 @@ class CheckSubmissions(APIView):
             root_testcases = TestCaseHolder.objects.filter(question=question[0].id).filter(is_sample=False)
             testcases = TestCaseSolutionLogger.objects.filter(room_solution=seat[0]).filter(is_solved=True)
             testcases_solved = testcases.count()
+            testcases_score = testcases.aggregate(Sum('score_for_this_testcase'))
             print("TestCases Solved :",str(testcases_solved))
             total_testcases = root_testcases.count()
             #duration calculation
@@ -499,7 +502,7 @@ class CheckSubmissions(APIView):
                                 "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
                                 "total_time":duration_in_m,
                                 "time_score_reduction":score_reduction,
-                                "overallstatus":"Your'e opponent didn't submit his test yet please wait!"
+                                "overallstatus":"You're opponent didn't submit his test yet please wait!"
                             },status=200)
                 else:
                     seat[0].save()
@@ -510,7 +513,7 @@ class CheckSubmissions(APIView):
                             "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
                             "total_time":duration_in_m,
                             "time_score_reduction":score_reduction,
-                            "overallstatus":"Your'e opponent didn't submit his test yet please wait!"
+                            "overallstatus":"You're opponent didn't submit his test yet please wait!"
                         },status=200)
                         
             else:
@@ -523,5 +526,5 @@ class CheckSubmissions(APIView):
                             "testcases_left":total_testcases - testcases_solved,
                             "total_time":duration_in_m,
                             "time_score_reduction":score_reduction,
-                            "overallstatus":"Your'e opponent didn't submit his test yet please wait!"
+                            "overallstatus":"Partially Solved!"
                         },status=206)

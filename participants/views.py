@@ -415,9 +415,9 @@ class CheckSubmissions(APIView):
     
     def post(self,request):
         try:
-            id = request.data["room_seat"]
+            id = request.data["id"]
             question_id = request.data["question_id"]
-            room_seat = request.data["id"]
+            room_seat = request.data["room_seat"]
         except:
             return Response(status=400)
         total_rooms = RoomParticipantAbstract.objects.all()

@@ -444,7 +444,7 @@ class CheckSubmissions(APIView):
             root_testcases = TestCaseHolder.objects.filter(question=question[0].id).filter(is_sample=False)
             testcases = TestCaseSolutionLogger.objects.filter(room_solution=seat[0]).filter(is_solved=True)
             testcases_solved = testcases.count()
-            testcases_score = testcases.aggregate(Sum('score_for_this_testcase'))
+            testcases_score = testcases.aggregate(Sum('score_for_this_testcase'))["score_for_this_testcase__sum"]
             print("TestCases Solved :",str(testcases_solved))
             total_testcases = root_testcases.count()
             #duration calculation
@@ -456,7 +456,7 @@ class CheckSubmissions(APIView):
             else:
                 score_reduction = 0
 
-            total_score = (testcases_solved*settings.MARKS_FOR_EACH_QUES) - math.ceil(score_reduction)
+            total_score = math.ceil((testcases_score - score_reduction))
             seat[0].score = total_score
 
             if testcases_solved==total_testcases:
@@ -475,7 +475,7 @@ class CheckSubmissions(APIView):
                                 'status':'All test cases passed',
                                 'score':total_score,
                                 'testcases':testcases_solved,
-                                "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
+                                "total_questions_score":testcases_score,
                                 "total_time":duration_in_m,
                                 "time_score_reduction":score_reduction,
                                 "overallstatus":"Disqualified"
@@ -488,7 +488,7 @@ class CheckSubmissions(APIView):
                                 'status':'All test cases passed',
                                 'score':total_score,
                                 'testcases':testcases_solved,
-                                "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
+                                "total_questions_score":testcases_score,
                                 "total_time":duration_in_m,
                                 "time_score_reduction":score_reduction,
                                 "overallstatus":"Qualified! We will share you further information!"
@@ -499,7 +499,7 @@ class CheckSubmissions(APIView):
                                 'status':'All test cases passed',
                                 'score':total_score,
                                 'testcases':testcases_solved,
-                                "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
+                                "total_questions_score":testcases_score,
                                 "total_time":duration_in_m,
                                 "time_score_reduction":score_reduction,
                                 "overallstatus":"You're opponent didn't submit his test yet please wait!"
@@ -510,7 +510,7 @@ class CheckSubmissions(APIView):
                             'status':'All test cases passed',
                             'score':total_score,
                             'testcases':testcases_solved,
-                            "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
+                            "total_questions_score":testcases_score,
                             "total_time":duration_in_m,
                             "time_score_reduction":score_reduction,
                             "overallstatus":"You're opponent didn't submit his test yet please wait!"
@@ -522,9 +522,27 @@ class CheckSubmissions(APIView):
                             'status':'Partially solved',
                             'score':total_score,
                             'testcases':testcases_solved,
-                            "marksforeach":str(settings.MARKS_FOR_EACH_QUES),
+                            "total_questions_score":testcases_score,
                             "testcases_left":total_testcases - testcases_solved,
                             "total_time":duration_in_m,
                             "time_score_reduction":score_reduction,
                             "overallstatus":"Partially Solved!"
                         },status=206)
+
+
+
+# from admin_portal.models import (
+#      Rounds,
+#      RoomParticipantAbstract,
+#      Rooms,
+#      RoomParticipantManager,
+#      TestCaseSolutionLogger,
+#      TestCaseHolder,
+#      QuestionsModel
+#  )
+# from django.db.models import Sum
+# id = "bb50f72a-2384-484a-8270-0c8c55443543"
+# question_id = "0e57facf-94f0-4fc1-9b8d-1914a701c4ed"
+# room_seat = "0fc6b585-b743-457e-914a-7a82e5372908"
+# total_rooms = RoomParticipantAbstract.objects.all()
+# room = total_rooms.filter(id=room_seat)

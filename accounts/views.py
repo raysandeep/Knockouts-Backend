@@ -7,7 +7,7 @@ from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from admin_portal.permissions import IsDSCQuestionModerator
 from .serializers import (
     UserSignupSerializer,
-    ProfilePicSerializer
+    ProfilePicSerializer, UserAdminSerializer
 )
 from .models import (
     User,
@@ -99,6 +99,11 @@ class AdminLoginView(APIView):
 class DisQualifyUser(APIView):
     permission_classes = [IsDSCQuestionModerator]
 
+    def get(self, request):
+        user = User.objects.filter(is_admin=False)
+        serializer = UserAdminSerializer(user, many=True)
+        return Response(serializer.data, status=200)
+
     def post(self, request):
         req_data = request.data
         if not req_data['email']:
@@ -108,5 +113,3 @@ class DisQualifyUser(APIView):
             user[0].is_disqualified = True
             return Response(status=204)
         return Response(status=403)
-
-

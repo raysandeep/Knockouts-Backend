@@ -351,7 +351,7 @@ class CallBackHandler(APIView):
             'error': dobase64decode(data['stderr']),
             'token': data['status']['id'],
             'is_solved': status,
-            "score_for_this_testcase": test_case[0].score
+            "score_for_this_testcase": settings.MARKS_FOR_EACH_QUES
         }
 
         print(dicti)
@@ -458,11 +458,9 @@ class CheckSubmissions(APIView):
             total_score = math.ceil((testcases_score - score_reduction))
             seat[0].score = total_score
 
-            test_cases_info = TestCasesSolutionSerailizer(testcases,many=True)
+            test_cases_info = TestCasesSolutionSerailizer(testcases, many=True)
 
             if testcases_solved == total_testcases:
-                # he solved everything
-                opponent = allseat.filter(room_seat__room=room.room).exclude(room_seat__participant=request.user)
                 seat[0].is_submitted = True
 
                 seat[0].save()
@@ -470,7 +468,7 @@ class CheckSubmissions(APIView):
                     'status': 'All test cases passed',
                     'score': total_score,
                     'testcases': testcases_solved,
-                    'info':test_cases_info.data,
+                    'info': test_cases_info.data,
                     "total_questions_score": testcases_score,
                     "total_time": duration_in_m,
                     "time_score_reduction": score_reduction,
@@ -491,3 +489,35 @@ class CheckSubmissions(APIView):
                     "overallstatus": "Partially Solved!"
                 }, status=206)
 
+
+class CheckSubmissionsAlreadySubmitted(APIView):
+    permission_classes = [IsnotDisqualified]
+    parsers = [JSONParser]
+
+    def post(self, request):
+        try:
+            id = request.data["id"]
+            room_seat = request.data["room_seat"]
+        except:
+            return Response(status=400)
+        total_rooms = RoomParticipantAbstract.objects.all()
+        room = total_rooms.filter(id=room_seat)
+        if not room.exists():
+            print("a")
+            return Response(status=400)
+        else:
+            room = room[0]
+            allseat = RoomParticipantManager.objects.prefetch_related('room_seat').all()  # room_seat
+            seat = allseat.filter(room_seat=room).filter(id=id)
+            if not seat.exists():
+                print("c")
+                return Response(status=400)
+
+            # Testcases
+            testcases = TestCaseSolutionLogger.objects.filter(room_solution=seat[0]).filter(is_solved=True)
+            testcases_score = testcases.aggregate(Sum('score_for_this_testcase'))["score_for_this_testcase__sum"]
+            test_cases_info = TestCasesSolutionSerailizer(testcases, many=True)
+            return Response({
+                'info': test_cases_info.data,
+                'total_score': testcases_score
+            }, status=200)

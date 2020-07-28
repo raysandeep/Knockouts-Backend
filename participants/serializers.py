@@ -1,25 +1,30 @@
 from rest_framework import serializers
 
-from admin_portal.models import(
+from admin_portal.models import (
     RoomParticipantAbstract,
     RoomParticipantManager,
     QuestionsModel,
-    TestCaseHolder
+    TestCaseHolder,
+    TestCaseSolutionLogger
 )
+
 
 class TestCaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestCaseHolder
         exclude = ['question']
 
+
 class QuestionSerializer(serializers.ModelSerializer):
     testcases = serializers.SerializerMethodField()
+
     class Meta:
         model = QuestionsModel
-        fields = ['id','question_title','question','testcases']
+        fields = ['id', 'question_title', 'question', 'testcases']
 
-    def get_testcases(self,obj):
-        return TestCaseSerializer(TestCaseHolder.objects.filter(question=obj.id).filter(is_sample=True),many=True).data
+    def get_testcases(self, obj):
+        return TestCaseSerializer(TestCaseHolder.objects.filter(question=obj.id).filter(is_sample=True), many=True).data
+
 
 class RoomParticipantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,7 +35,8 @@ class RoomParticipantSerializer(serializers.ModelSerializer):
 class RoomParticipantUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoomParticipantManager
-        exclude = ['end_time','start_time','is_submitted','score']
+        exclude = ['end_time', 'start_time', 'is_submitted', 'score']
+
 
 class RoomParticipantAbstractSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(source='participant.full_name')
@@ -48,12 +54,18 @@ class RoomParticipantAbstractSerializer(serializers.ModelSerializer):
         return RoomParticipantSerializer(RoomParticipantManager.objects.filter(room_seat=obj.id), many=True).data
 
 
-
 class QuestionAdminSerializer(serializers.ModelSerializer):
     testcases = serializers.SerializerMethodField()
+
     class Meta:
         model = QuestionsModel
-        fields = ['id','question_title','question','testcases']
+        fields = ['id', 'question_title', 'question', 'testcases']
 
-    def get_tescases(self,obj):
-        return TestCaseSerializer(TestCaseHolder.objects.filter(question=obj.id),many=True).data
+    def get_tescases(self, obj):
+        return TestCaseSerializer(TestCaseHolder.objects.filter(question=obj.id), many=True).data
+
+
+class TestCasesSolutionSerailizer(serializers.ModelSerializer):
+    class Meta:
+        model = TestCaseSolutionLogger
+        fields = ['id', 'token']

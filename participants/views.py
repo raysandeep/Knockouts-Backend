@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework.generics import CreateAPIView,RetrieveAPIView,ListAPIView,RetrieveUpdateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveAPIView, ListAPIView, RetrieveUpdateAPIView
 from .permissions import (
     IsnotDisqualified,
     IsObjOwner
@@ -18,12 +18,12 @@ from admin_portal.models import (
     TestCaseHolder,
     QuestionsModel
 )
-from .serializers import(
+from .serializers import (
     RoomParticipantAbstractSerializer,
     RoomParticipantSerializer,
     RoomParticipantUpdateSerializer,
     QuestionSerializer,
-    QuestionAdminSerializer
+    QuestionAdminSerializer, TestCasesSolutionSerailizer
 )
 from django.utils import timezone
 import pytz
@@ -33,14 +33,15 @@ import math
 from django.core.cache import cache
 from accounts.models import User
 import requests as rq
-import base64 
+import base64
 from django.db.models import Sum
+
 SAMPLE_JSON = {
     "data": [{
-            "id": 46,
-            "time": 0.5,
-            "name": "Bash (5.0.0)"
-        },
+        "id": 46,
+        "time": 0.5,
+        "name": "Bash (5.0.0)"
+    },
         {
             "id": 75,
             "time": 1,
@@ -227,74 +228,78 @@ def getTimeLimit(id):
 
     return 2.5
 
-def sendRequest(data,room_id):
+
+def sendRequest(data, room_id):
     headers = {
         'Content-Type': 'application/json'
-        }
-    response = rq.request("POST", settings.JUDGEAPI_URL, headers=headers, json = data)
+    }
+    response = rq.request("POST", settings.JUDGEAPI_URL, headers=headers, json=data)
     tokens = []
     print(response.status_code)
-    
+
     if response.status_code == 201:
         for i in response.json():
             tokens.append(i["token"])
-        if cache.set(room_id+"__count",str(len(tokens)),timeout=60*5):
-            return True,tokens
-    return False,[]
+        if cache.set(room_id + "__count", str(len(tokens)), timeout=60 * 5):
+            return True, tokens
+    return False, []
+
 
 def sendTriggertofastapi(room_name):
     headers = {
         'Content-Type': 'application/json'
-        }
-    response = rq.request("GET", settings.FASTAPI_URL+'trigger/'+room_name)
+    }
+    response = rq.request("GET", settings.FASTAPI_URL + 'trigger/' + room_name)
     if response.status_code == 200:
         return True
     return False
 
-def sendRedis(room_name,token,status):
-    count = int(cache.get(room_name+"__count"))-1
-    
-    ttl = cache.ttl(room_name+"__count")
-    cache.set(room_name+"__count",str(count),timeout=ttl)
-    
-    if count==0:
+
+def sendRedis(room_name, token, status):
+    count = int(cache.get(room_name + "__count")) - 1
+
+    ttl = cache.ttl(room_name + "__count")
+    cache.set(room_name + "__count", str(count), timeout=ttl)
+
+    if count == 0:
         sendTriggertofastapi(room_name)
 
     return True
-
-
 
 
 class DashBoardListAPIView(ListAPIView):
     serializer_class = RoomParticipantAbstractSerializer
     permission_classes = [IsnotDisqualified]
     parsers = [JSONParser]
-    
+
     def get_queryset(self):
         request_datetime = timezone.now()
         round = Rounds.objects.filter(start_time__lte=request_datetime,
-                     end_time__gte=request_datetime)
+                                      end_time__gte=request_datetime)
         if not round.exists():
             return []
         user_dash = RoomParticipantAbstract.objects.prefetch_related('room').filter(
             participant=self.request.user
-                ).filter(room__round__in=round)
+        ).filter(room__round__in=round)
         return user_dash
+
 
 class CodeRetrieveAPIView(RetrieveUpdateAPIView):
     queryset = RoomParticipantManager.objects.all()
     permission_classes = [IsObjOwner]
     parsers = [JSONParser]
-    
+
     def get_serializer_class(self):
         if self.request.method == "PATCH":
             return RoomParticipantUpdateSerializer
         return RoomParticipantSerializer
 
+
 class CodeCreateAPIView(CreateAPIView):
     queryset = RoomParticipantManager.objects.all()
     serializer_class = RoomParticipantUpdateSerializer
     permission_classes = [IsnotDisqualified]
+
     def get_queryset(self):
         id = ''
         if self.request.data['id']:
@@ -315,107 +320,105 @@ def dobase64encode(tobeencoded):
     else:
         return base64.b64encode(tobeencoded.encode("ascii")).decode("ascii")
 
+
 def dobase64decode(tobedecoded):
     if tobedecoded is None:
         return "NULL"
     else:
-        return  base64.b64decode(tobedecoded.encode("ascii")).decode("ascii") 
+        return base64.b64decode(tobedecoded.encode("ascii")).decode("ascii")
+
 
 class CallBackHandler(APIView):
     parsers = [JSONParser]
     permission_classes = [AllowAny]
 
-    
-    def put(self,request,roomabsid,testid):
+    def put(self, request, roomabsid, testid):
         data = request.data
         room = RoomParticipantManager.objects.filter(id=roomabsid)
         test_case = TestCaseHolder.objects.filter(id=testid)
-        status=False
+        status = False
         if data['status']['id'] == 3:
             status = True
         # print(data)
         print(data['status']['id'])
         dicti = {
-            'room_solution':room[0],
-            'test_case':test_case[0],
-            'stdin':test_case[0].stdin,
-            'stdout':dobase64decode(data['stdout']),
-            'time':data['time'],
-            'memory':data['memory'],
-            'error':dobase64decode(data['stderr']),
-            'token':data['token'],
-            'is_solved':status,
-            "score_for_this_testcase":test_case[0].score
+            'room_solution': room[0],
+            'test_case': test_case[0],
+            'stdin': test_case[0].stdin,
+            'stdout': dobase64decode(data['stdout']),
+            'time': data['time'],
+            'memory': data['memory'],
+            'error': dobase64decode(data['stderr']),
+            'token': data['status']['id'],
+            'is_solved': status,
+            "score_for_this_testcase": test_case[0].score
         }
-        
+
         print(dicti)
         testcase = TestCaseSolutionLogger(**dicti)
         testcase.save()
 
-        sendRedis(roomabsid,data['token'],status)
+        sendRedis(roomabsid, data['token'], status)
         return Response(status=200)
-
-
 
 
 class SubmitQuestion(APIView):
     permission_classes = [IsnotDisqualified]
     parsers = [JSONParser]
 
-    def post(self,request):
+    def post(self, request):
         try:
             id = request.data["id"]
             question_id = request.data["question_id"]
         except:
             return Response(status=400)
-        #get room
+        # get room
         testcases = TestCaseSolutionLogger.objects.filter(room_solution=id)
         testcases.delete()
         room = RoomParticipantManager.objects.filter(id=id)
         if not room.exists():
             return Response(status=400)
         else:
-            #get code 
+            # get code
             language_id = room[0].language_of_code
             current_code = room[0].current_code
-            my_list=[]
-            #got room get question from it 
+            my_list = []
+            # got room get question from it
             question = QuestionsModel.objects.filter(id=question_id)
             if not question.exists():
                 return Response(status=400)
-            #get testcases now
+            # get testcases now
             test_cases = TestCaseHolder.objects.filter(question=question[0]).filter(is_sample=False)
             time_limit = getTimeLimit(language_id)
-            BASE_URL = settings.HOST_URL+"/participant/callback/"+id+"/"
+            BASE_URL = settings.HOST_URL + "/participant/callback/" + id + "/"
             current_code = base64.b64encode(current_code.encode("ascii")).decode("ascii")
 
             for i in test_cases:
-
                 my_list.append({
-                    "language_id":language_id,
-                    "source_code":current_code,
-                    "stdin":dobase64encode(i.stdin),
-                    "expected_output":dobase64encode(i.stdout),
-                    "memory_limit":i.max_memory*1024,
-                    "callback_url":BASE_URL+str(i.id),
-                    "cpu_time_limit":time_limit*float(i.max_time),
-                })      
-            #make data for sending it xD
+                    "language_id": language_id,
+                    "source_code": current_code,
+                    "stdin": dobase64encode(i.stdin),
+                    "expected_output": dobase64encode(i.stdout),
+                    "memory_limit": i.max_memory * 1024,
+                    "callback_url": BASE_URL + str(i.id),
+                    "cpu_time_limit": time_limit * float(i.max_time),
+                })
+                # make data for sending it xD
             data = {
-                "submissions":my_list
-                }
-            status,tokens = sendRequest(data,id)
+                "submissions": my_list
+            }
+            status, tokens = sendRequest(data, id)
             return Response({
-                'status':status,
-                'tokens':tokens
-            },status=200)
+                'status': status,
+                'tokens': tokens
+            }, status=200)
 
 
 class CheckSubmissions(APIView):
     permission_classes = [IsnotDisqualified]
     parsers = [JSONParser]
-    
-    def post(self,request):
+
+    def post(self, request):
         try:
             id = request.data["id"]
             question_id = request.data["question_id"]
@@ -433,116 +436,58 @@ class CheckSubmissions(APIView):
             if not question.exists():
                 print("b")
                 return Response(status=400)
-            allseat = RoomParticipantManager.objects.prefetch_related('room_seat').all() #room_seat
+            allseat = RoomParticipantManager.objects.prefetch_related('room_seat').all()  # room_seat
             seat = allseat.filter(room_seat=room).filter(id=id)
             if not seat.exists():
                 print("c")
                 return Response(status=400)
-            
-            
+
             # Testcases
             root_testcases = TestCaseHolder.objects.filter(question=question[0].id).filter(is_sample=False)
             testcases = TestCaseSolutionLogger.objects.filter(room_solution=seat[0]).filter(is_solved=True)
             testcases_solved = testcases.count()
             testcases_score = testcases.aggregate(Sum('score_for_this_testcase'))["score_for_this_testcase__sum"]
-            print("TestCases Solved :",str(testcases_solved))
+            print("TestCases Solved :", str(testcases_solved))
             total_testcases = root_testcases.count()
-            #duration calculation
-            duration = (seat[0].end_time -seat[0].start_time)
+            # duration calculation
+            duration = (seat[0].end_time - seat[0].start_time)
             duration_in_s = duration.total_seconds()
             duration_in_m = divmod(duration_in_s, 60)[0]
-            if duration_in_m>60:
-                score_reduction=(duration_in_m-60)*settings.TIME_MULTIPLY_CONSTANT
-            else:
-                score_reduction = 0
+            score_reduction = (duration_in_m * settings.TIME_MULTIPLY_CONSTANT)
 
             total_score = math.ceil((testcases_score - score_reduction))
             seat[0].score = total_score
 
-            if testcases_solved==total_testcases:
-                #he solved everything 
-                opponent =  allseat.filter(room_seat__room=room.room).exclude(room_seat__participant=request.user)
+            test_cases_info = TestCasesSolutionSerailizer(testcases,many=True)
+
+            if testcases_solved == total_testcases:
+                # he solved everything
+                opponent = allseat.filter(room_seat__room=room.room).exclude(room_seat__participant=request.user)
                 seat[0].is_submitted = True
-                if opponent.exists():
-                    opponent = opponent[0]
-                    opponent_status = opponent.is_submitted 
-                    if opponent_status:
-                        if opponent.score >= total_score:
-                            user = request.user
-                            user.is_disqualified = True
-                            seat[0].save()
-                            return Response({
-                                'status':'All test cases passed',
-                                'score':total_score,
-                                'testcases':testcases_solved,
-                                "total_questions_score":testcases_score,
-                                "total_time":duration_in_m,
-                                "time_score_reduction":score_reduction,
-                                "overallstatus":"Disqualified"
-                            },status=200)
-                        else:
-                            seat[0].save()
-                            user = User.objects.filter(id=opponent.room_seat.participant)
-                            user.is_disqualified = True
-                            return Response({
-                                'status':'All test cases passed',
-                                'score':total_score,
-                                'testcases':testcases_solved,
-                                "total_questions_score":testcases_score,
-                                "total_time":duration_in_m,
-                                "time_score_reduction":score_reduction,
-                                "overallstatus":"Qualified! We will share you further information!"
-                            },status=200)
-                    else:
-                        seat[0].save()
-                        return Response({
-                                'status':'All test cases passed',
-                                'score':total_score,
-                                'testcases':testcases_solved,
-                                "total_questions_score":testcases_score,
-                                "total_time":duration_in_m,
-                                "time_score_reduction":score_reduction,
-                                "overallstatus":"You're opponent didn't submit his test yet please wait!"
-                            },status=200)
-                else:
-                    seat[0].save()
-                    return Response({
-                            'status':'All test cases passed',
-                            'score':total_score,
-                            'testcases':testcases_solved,
-                            "total_questions_score":testcases_score,
-                            "total_time":duration_in_m,
-                            "time_score_reduction":score_reduction,
-                            "overallstatus":"You're opponent didn't submit his test yet please wait!"
-                        },status=200)
-                        
+
+                seat[0].save()
+                return Response({
+                    'status': 'All test cases passed',
+                    'score': total_score,
+                    'testcases': testcases_solved,
+                    'info':test_cases_info.data,
+                    "total_questions_score": testcases_score,
+                    "total_time": duration_in_m,
+                    "time_score_reduction": score_reduction,
+                    "overallstatus": "Please wait till the round ends!"
+                }, status=200)
+
             else:
                 seat[0].save()
                 return Response({
-                            'status':'Partially solved',
-                            'score':total_score,
-                            'testcases':testcases_solved,
-                            "total_questions_score":testcases_score,
-                            "testcases_left":total_testcases - testcases_solved,
-                            "total_time":duration_in_m,
-                            "time_score_reduction":score_reduction,
-                            "overallstatus":"Partially Solved!"
-                        },status=206)
+                    'status': 'Partially solved',
+                    'score': total_score,
+                    'testcases': testcases_solved,
+                    'info': test_cases_info.data,
+                    "total_questions_score": testcases_score,
+                    "testcases_left": total_testcases - testcases_solved,
+                    "total_time": duration_in_m,
+                    "time_score_reduction": score_reduction,
+                    "overallstatus": "Partially Solved!"
+                }, status=206)
 
-
-
-# from admin_portal.models import (
-#      Rounds,
-#      RoomParticipantAbstract,
-#      Rooms,
-#      RoomParticipantManager,
-#      TestCaseSolutionLogger,
-#      TestCaseHolder,
-#      QuestionsModel
-#  )
-# from django.db.models import Sum
-# id = "bb50f72a-2384-484a-8270-0c8c55443543"
-# question_id = "0e57facf-94f0-4fc1-9b8d-1914a701c4ed"
-# room_seat = "0fc6b585-b743-457e-914a-7a82e5372908"
-# total_rooms = RoomParticipantAbstract.objects.all()
-# room = total_rooms.filter(id=room_seat)

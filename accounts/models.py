@@ -15,7 +15,7 @@ class MyUserManager(BaseUserManager):
             raise ValueError('Users must have a phone')
         if not password:
             raise ValueError('Password is mandatory to pass')
-        elif len(password)<6 or len(password)>18:
+        elif len(password) < 6 or len(password) > 18:
             raise ValueError('Password should have a minimum 6 characters and a maximum of 18 characters')
 
         user = self.model(
@@ -40,22 +40,21 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-class User(AbstractBaseUser):
-    username 				= models.EmailField(verbose_name="username", max_length=253, unique=True)
-    full_name               = models.CharField(verbose_name="fullname", max_length=60)
-    phone                   = models.CharField(verbose_name="phone",max_length=20)
-    date_joined				= models.DateTimeField(verbose_name='date joined', auto_now_add=True)
-    last_login				= models.DateTimeField(verbose_name='last login', auto_now=True)
-    score                   = models.IntegerField(default=0, verbose_name='Score')
-    is_admin				= models.BooleanField(default=False)
-    is_staff				= models.BooleanField(default=False)
-    is_superuser			= models.BooleanField(default=False)
-    is_blocked              = models.BooleanField(default=False)
-    is_disqualified         = models.BooleanField(default=False)
 
+class User(AbstractBaseUser):
+    username = models.EmailField(verbose_name="username", max_length=253, unique=True)
+    full_name = models.CharField(verbose_name="fullname", max_length=60)
+    phone = models.CharField(verbose_name="phone", max_length=20)
+    date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
+    last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
+    is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    is_blocked = models.BooleanField(default=False)
+    is_disqualified = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['full_name','phone']
+    REQUIRED_FIELDS = ['full_name', 'phone']
 
     objects = MyUserManager()
 
@@ -72,8 +71,8 @@ class User(AbstractBaseUser):
 
 
 class ProfilePic(models.Model):
-    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     picture = models.FileField(upload_to='profiledps/')
-    
+
     def __str__(self):
         return self.user.username

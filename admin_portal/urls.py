@@ -10,5 +10,10 @@ urlpatterns = [
     path('rounds/get', views.RoundListAPIView.as_view()),
     path('rounds/update/<pk>', views.RoundUpdateAPIView.as_view()),
     path('rounds/create', views.RoundCreateAPIView.as_view()),
-    path('assign',views.AssignPeopleAPIView.as_view())
+    path('assign',views.AssignPeopleAPIView.as_view()),
+    path('rooms/list/<round>',views.GetAllRoomsListAPIView.as_view()),
+    path('rooms/unassigned/<round>',views.GetPendingPplAPIView.as_view()),
+    path('rooms/create',views.RoomCreateAPIView.as_view()),
+    path('room/view/<pk>',views.RoomRetrieveAPIView.as_view()),
+    path('room/destory/<pk>',views.RoomDestroyAPIView.as_view())
 ]

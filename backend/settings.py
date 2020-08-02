@@ -3,9 +3,16 @@ from decouple import config
 import django_heroku
 
 
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = config('SECRET_KEY')
+
+HOST_URL = config('HOST_URL')
+
+JUDGEAPI_URL =  config('JUDGEAPI_URL')
+
+FASTAPI_URL =  config('FASTAPI_URL')
 
 DEBUG = config('DEBUG')
 
@@ -24,9 +31,11 @@ INSTALLED_APPS = [
 
     'accounts',
     'admin_portal',
+    'participants',
     
     'rest_framework',
     'rest_framework.authtoken',
+    'django_redis'
 
 ]
 
@@ -132,7 +141,18 @@ CORS_ALLOW_HEADERS = [
     'X-Requested-With',
 ]
 
+TIME_MULTIPLY_CONSTANT = 2
+MARKS_FOR_EACH_QUES = 100
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": config("REDIS_URL"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
 
 django_heroku.settings(locals())

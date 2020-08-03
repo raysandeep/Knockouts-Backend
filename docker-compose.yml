@@ -9,7 +9,7 @@ services:
     volumes:
       - static_volume:/app/staticfiles
     env_file:
-      - ./.env.dev
+      - ./.env
 
   nginx:
     build: ./nginx

@@ -1,22 +1,20 @@
 import os
-from decouple import config
+# from decouple import config
 import django_heroku
-
-
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
-HOST_URL = config('HOST_URL')
+HOST_URL = os.environ.get("HOST_URL")
 
-JUDGEAPI_URL =  config('JUDGEAPI_URL')
+JUDGEAPI_URL = os.environ.get("JUDGEAPI_URL")
 
-FASTAPI_URL =  config('FASTAPI_URL')
+FASTAPI_URL = os.environ.get("FASTAPI_URL")
 
-DEBUG = config('DEBUG')
+DEBUG = os.environ.get("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     # CORS_APP
@@ -32,7 +30,7 @@ INSTALLED_APPS = [
     'accounts',
     'admin_portal',
     'participants',
-    
+
     'rest_framework',
     'rest_framework.authtoken',
     'django_redis'
@@ -74,8 +72,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'manboobs',
+        'HOST': 'knockouts.cgvyjtr3czxr.us-east-1.rds.amazonaws.com',
+        'PORT': '5432'
     }
 }
 
@@ -94,7 +96,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Kolkata'
@@ -111,21 +112,18 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated', ),
+        'rest_framework.permissions.IsAuthenticated',),
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
 
-
-#CORS CONFIGURATION
-CORS_ORIGIN_ALLOW_ALL = True  #To be changed in future
+# CORS CONFIGURATION
+CORS_ORIGIN_ALLOW_ALL = True  # To be changed in future
 
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -147,12 +145,11 @@ MARKS_FOR_EACH_QUES = 100
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": config("REDIS_URL"),
+        "LOCATION": os.environ.get("REDIS_URL"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
 }
-
 
 django_heroku.settings(locals())

@@ -145,7 +145,7 @@ MARKS_FOR_EACH_QUES = 100
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ.get("REDIS_URL"),
+        "LOCATION": "knockouts.mjbbsw.ng.0001.use1.cache.amazonaws.com:6379",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }

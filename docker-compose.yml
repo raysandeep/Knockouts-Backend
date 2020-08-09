@@ -3,22 +3,77 @@ version: '3.7'
 services:
   web:
     build: ./app
+    image: raysandeep/knockouts
     command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
-    expose:
-      - 8000
+    networks:
+      - caddy
+    deploy:
+      mode: replicated
+      replicas: 4
+      restart_policy:
+        condition: any
+    ports:
+      - 4000:80
     volumes:
       - static_volume:/app/staticfiles
+    labels:
+      caddy.address: api.knockouts.dscvit.com/
+      caddy.targetpath: /
     env_file:
       - .env
 
-  nginx:
-    build: ./nginx
+  web1:
+    build: ./app1
+    image: raysandeep/knockouts1
+    command: uvicorn main:app --host 0.0.0.0 --port 5000 --reload 
+    ports:
+      - 4000:80
+    networks:
+      - caddy
+    deploy:
+      mode: replicated
+      replicas: 4
+      restart_policy:
+        condition: any
+    ports:
+      - 4000:80
     volumes:
       - static_volume:/app/staticfiles
+    labels:
+      caddy.address: api.knockouts.dscvit.com/
+      caddy.targetpath: /fastapi
+    env_file:
+      - .env
+
+  caddy:
+    image: lucaslorentz/caddy-docker-proxy:alpine
     ports:
-      - 1337:80
+      - 80:80
+      - 443:443
     depends_on:
       - web
-
+      - web1
+    networks:
+      - caddy
+    command: -port 443 -email rayanuthalas@gmail.com -agree=true -log stdout
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./ops/caddy/certs:/root/.caddy
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: 200M
+  
 volumes:
   static_volume:
+
+networks:
+  caddy:
+    driver: overlay

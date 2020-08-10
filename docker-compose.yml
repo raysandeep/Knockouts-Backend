@@ -2,78 +2,73 @@ version: '3.7'
 
 services:
   web:
+    env_file: ./.env
     build: ./app
     image: raysandeep/knockouts
     command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
-    networks:
-      - caddy
     deploy:
       mode: replicated
       replicas: 4
       restart_policy:
         condition: any
-    ports:
-      - 4000:80
+    labels:
+      - traefik.backend=web
+      - traefik.frontend.rule=Host:api.knockouts.dscvit.com;PathPrefix:/api
+      - traefik.docker.network=web
+      - traefik.port=8000
+    networks:
+      - internal
+      - web
     volumes:
       - static_volume:/app/staticfiles
-    labels:
-      caddy.address: api.knockouts.dscvit.com/
-      caddy.targetpath: /
-    env_file:
-      - .env
+    
 
   web1:
     build: ./app1
     image: raysandeep/knockouts1
-    command: uvicorn main:app --host 0.0.0.0 --port 5000 --reload 
+    command: uvicorn main:app --host 0.0.0.0 --port 5000 --reload
     ports:
-      - 4000:80
-    networks:
-      - caddy
+      - 5000:5000
     deploy:
       mode: replicated
       replicas: 4
       restart_policy:
         condition: any
-    ports:
-      - 4000:80
     volumes:
       - static_volume:/app/staticfiles
     labels:
-      caddy.address: api.knockouts.dscvit.com/
-      caddy.targetpath: /fastapi
+      - traefik.backend=web1
+      - traefik.frontend.rule=Host:api.knockouts.dscvit.com;PathPrefix:/api1
+      - traefik.docker.network=web
+      - traefik.port=5000
+    networks:
+      - internal
+      - web
     env_file:
       - .env
 
-  caddy:
-    image: lucaslorentz/caddy-docker-proxy:alpine
-    ports:
-      - 80:80
-      - 443:443
-    depends_on:
-      - web
-      - web1
+  traefik:
+    image: traefik:1.7.2-alpine
+    restart: always
+    container_name: traefik
     networks:
-      - caddy
-    command: -port 443 -email rayanuthalas@gmail.com -agree=true -log stdout
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./ops/caddy/certs:/root/.caddy
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-      replicas: 1
-      restart_policy:
-        condition: any
-      resources:
-        reservations:
-          cpus: '0.1'
-          memory: 200M
+      - ./traefik.toml:/traefik.toml
+      - ./acme.json:/acme.json
+    labels:
+      - traefik.frontend.rule=Host:api.knockouts.dscvit.com
+      - traefik.port=8080
   
 volumes:
   static_volume:
 
 networks:
-  caddy:
-    driver: overlay
+  web:
+    external: true
+  internal:
+    external: false

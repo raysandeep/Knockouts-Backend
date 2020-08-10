@@ -15,7 +15,5 @@ RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev libffi-dev ope
 RUN pip install psycopg2 psycopg2-binary
 RUN pip install -r requirements.txt
 
-
-
 # copy project
 COPY . .

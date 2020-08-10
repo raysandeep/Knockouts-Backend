@@ -17,9 +17,9 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('auth/', include('accounts.urls')),
+    path('api/abhis/', admin.site.urls),
+    path('api/auth/', include('accounts.urls')),
     path('api/admin/', include('admin_portal.urls')),
-    path('participant/', include('participants.urls')),
-    path('oauth/', include('rest_framework_social_oauth2.urls')),
+    path('api/participant/', include('participants.urls')),
+    path('api/oauth/', include('rest_framework_social_oauth2.urls')),
 ]

@@ -90,12 +90,12 @@ async def startup_event():
 
 
 
-@router.get("/")
+@router.get("/api1")
 async def get():
     return HTMLResponse(html)
 
 
-@router.post("/run")
+@router.post("/api1/run")
 async def runcode(req: Request):
     response = rq.request("POST",JUDGE_APIURL,json=await req.json())
     resp = response.json()
@@ -103,14 +103,14 @@ async def runcode(req: Request):
     return resp
 
 
-@router.get("/trigger/{roomname}")
+@router.get("/api1/trigger/{roomname}")
 async def django(roomname):
     rs.set(roomname,"True")
     rs.expire(roomname,60*2)
     return {}
 
 
-@router.get("/status/{roomname}")
+@router.get("/api1/status/{roomname}")
 async def docs(roomname):
     word = rs.get(roomname)
     rs.delete(roomname)

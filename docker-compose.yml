@@ -21,7 +21,8 @@ services:
       - web
     volumes:
       - static_volume:/app/staticfiles
-    
+    depends_on: 
+      - traefik
 
   web1:
     build: ./app1
@@ -46,6 +47,8 @@ services:
       - web
     env_file:
       - .env
+    depends_on: 
+      - traefik
 
   traefik:
     image: traefik:1.7.2-alpine

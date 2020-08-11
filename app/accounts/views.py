@@ -29,6 +29,13 @@ class UserSignupView(APIView):
     permission_classes = (AllowAny,)
     parser_classes = [JSONParser]
 
+
+    def get_random_string(self,length):
+        letters = string.ascii_lowercase
+        result_str = ''.join(random.choice(letters) for i in range(length))
+        print("Random string of length", length, "is:", result_str)
+        return result_str
+
     # Sigup user (create new object)
     def post(self, request):
         data={
@@ -50,9 +57,10 @@ class UserSignupView(APIView):
 
         if serializer.is_valid():
             user_data = serializer.data
+            password = request.data.get('password',self.get_random_string(8))
             try:
                 User.objects.create_user(
-                    password=user_data['password'],
+                    password=password,
                     username=user_data['username'],
                     phone=user_data['phone'],
                     full_name=user_data['full_name']
@@ -60,12 +68,12 @@ class UserSignupView(APIView):
             except ValueError as e:
                 print(e)
                 return Response({
-                    'status': 'failed',
+                    'message': 'Please don\'t try to override the config!' ,
                     'error': str(e)
                 }, status=403)
             return Response({"message": "User Signed up successfully!"}, status=201)
         else:
-            return Response({"message": "User already exists!"}, status=409)
+            return Response({"message": "User already exists!","errors":serializer.errors}, status=409)
 
 
 class UserLoginView(APIView):

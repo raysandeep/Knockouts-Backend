@@ -16,7 +16,7 @@ DEBUG = os.environ.get("DEBUG")
 
 GOOGLE_RECAPTCHA = os.environ.get("GOOGLE_RECAPTCHA")
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['api.knockouts.dscvit.com']
 
 INSTALLED_APPS = [
     # CORS_APP
@@ -129,6 +129,14 @@ REST_FRAMEWORK = {
         'rest_framework_social_oauth2.authentication.SocialAuthentication',
         'rest_framework.authentication.TokenAuthentication'
     ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '600/hour',
+        'user': '1000/hour'
+    }
 }
 
 AUTHENTICATION_BACKENDS = (
@@ -189,7 +197,12 @@ SOCIAL_AUTH_PIPELINE = (
 
 
 # CORS CONFIGURATION
-CORS_ORIGIN_ALLOW_ALL = True  # To be changed in future
+CORS_ORIGIN_ALLOW_ALL = False  
+
+CORS_ORIGIN_WHITELIST = (
+    'https://comp-edge.netlify.app/',
+    'https://knockouts.dscvit.com/'
+)
 
 CORS_ALLOW_HEADERS = [
     'accept',

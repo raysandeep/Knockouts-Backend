@@ -9,7 +9,7 @@ from rest_framework.fields import CurrentUserDefault
 class UserSignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'full_name', 'phone', 'password')
+        fields = ('username', 'full_name', 'phone')
 
 
 class UserAdminSerializer(serializers.ModelSerializer):

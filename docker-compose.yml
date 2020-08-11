@@ -51,19 +51,19 @@ services:
       - traefik
 
 
-  static:
-    container_name: nginx
-    image: nginx:1.19.0-alpine
-    volumes: 
-      - static_volume:/usr/share/nginx/html
-    labels:
-      - traefik.backend=static
-      - traefik.frontend.rule=Host:api.knockouts.dscvit.com;PathPrefix:/api/static
-      - traefik.docker.network=web
-      - traefik.port=80
-    networks: 
-      - internal
-      - web
+  # static:
+  #   container_name: nginx
+  #   image: nginx:1.19.0-alpine
+  #   volumes: 
+  #     - static_volume:/usr/share/nginx/html
+  #   labels:
+  #     - traefik.backend=static
+  #     - traefik.frontend.rule=Host:api.knockouts.dscvit.com;PathPrefix:/api/static
+  #     - traefik.docker.network=web
+  #     - traefik.port=80
+  #   networks: 
+  #     - internal
+  #     - web
 
   redis: 
     container_name: redis

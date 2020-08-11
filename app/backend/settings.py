@@ -199,10 +199,10 @@ SOCIAL_AUTH_PIPELINE = (
 # CORS CONFIGURATION
 CORS_ORIGIN_ALLOW_ALL = False  
 
-CORS_ORIGIN_WHITELIST = (
-    'https://comp-edge.netlify.app/',
-    'https://knockouts.dscvit.com/'
-)
+CORS_ORIGIN_WHITELIST = [
+    'https://comp-edge.netlify.app',
+    'https://knockouts.dscvit.com'
+]
 
 CORS_ALLOW_HEADERS = [
     'accept',

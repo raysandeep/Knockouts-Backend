@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.8.3-alpine
+FROM python
 
 # set work directory
 WORKDIR ../.
@@ -11,7 +11,6 @@ ENV PYTHONUNBUFFERED 1
 # install dependencies
 RUN pip install --upgrade pip
 COPY ./requirements.txt .
-RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev libffi-dev openssl-dev libgcc
 RUN pip install psycopg2 psycopg2-binary
 RUN pip install -r requirements.txt
 

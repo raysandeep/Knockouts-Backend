@@ -53,12 +53,13 @@ services:
 
 
   redis: 
+    name: redis
+    image: redis
     labels:
       - traefik.enable=false
     restart: always
     ports: 
       - 6379:6379
-    name: redis
     networks: 
       - internal
 

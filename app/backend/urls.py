@@ -15,6 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 urlpatterns = [
     path('api/abhis/', admin.site.urls),
@@ -22,4 +25,4 @@ urlpatterns = [
     path('api/admin/', include('admin_portal.urls')),
     path('api/participant/', include('participants.urls')),
     path('api/oauth/', include('rest_framework_social_oauth2.urls')),
-]
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

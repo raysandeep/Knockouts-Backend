@@ -23,6 +23,9 @@ from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
 from social_core.backends.oauth import BaseOAuth2
 from django.conf import settings
 import requests 
+import random
+import string
+
 
 # Create your views here.
 class UserSignupView(APIView):

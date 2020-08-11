@@ -5,7 +5,7 @@ services:
     env_file: ./.env
     build: ./app
     image: raysandeep/knockouts
-    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --timeout 90 --log-level debug --workers 4
+    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --timeout 90 --log-level debug --worker-class=gevent --workers 4
     deploy:
       mode: replicated
       replicas: 4

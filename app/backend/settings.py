@@ -12,7 +12,8 @@ JUDGEAPI_URL = os.environ.get("JUDGEAPI_URL")
 
 FASTAPI_URL = os.environ.get("FASTAPI_URL")
 
-DEBUG = os.environ.get("DEBUG")
+
+DEBUG = False if os.environ.get("DEBUG") == "False" else True
 
 GOOGLE_RECAPTCHA = os.environ.get("GOOGLE_RECAPTCHA")
 

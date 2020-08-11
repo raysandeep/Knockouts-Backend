@@ -51,6 +51,17 @@ services:
     depends_on: 
       - traefik
 
+
+  redis: 
+    labels:
+      - traefik.enable=false
+    restart: always
+    ports: 
+      - 6379:6379
+    name: redis
+    networks: 
+      - internal
+
   traefik:
     image: traefik:1.7.2-alpine
     restart: always

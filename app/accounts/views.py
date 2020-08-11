@@ -21,7 +21,7 @@ from rest_framework.authtoken.models import Token
 from social_django.utils import load_strategy, load_backend
 from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
 from social_core.backends.oauth import BaseOAuth2
-
+from django.conf import settings
 
 # Create your views here.
 class UserSignupView(APIView):
@@ -30,6 +30,20 @@ class UserSignupView(APIView):
 
     # Sigup user (create new object)
     def post(self, request):
+        data={
+            'secret': settings.GOOGLE_RECAPTCHA,
+            'response': request.data.get('g_token', None)
+        }
+
+        resp = requests.post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            data=data
+        )
+
+        print(resp.json())
+
+        if not resp.json().get('success'):
+            return Response(data={'message': 'ReCAPTCHA not verified!'}, status=406)
 
         serializer = UserSignupSerializer(data=request.data)
 
@@ -48,9 +62,9 @@ class UserSignupView(APIView):
                     'status': 'failed',
                     'error': str(e)
                 }, status=403)
-            return Response({"message": "User Signed up successfully"}, status=201)
+            return Response({"message": "User Signed up successfully!"}, status=201)
         else:
-            return Response({"message": serializer.errors}, status=400)
+            return Response({"message": "User already exists!"}, status=409)
 
 
 class UserLoginView(APIView):

@@ -14,6 +14,8 @@ FASTAPI_URL = os.environ.get("FASTAPI_URL")
 
 DEBUG = os.environ.get("DEBUG")
 
+GOOGLE_RECAPTCHA = os.environ.get("GOOGLE_RECAPTCHA")
+
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [

@@ -21,6 +21,7 @@ services:
       - web
     volumes:
       - static_volume:/app/staticfiles
+      - static_volume:/staticfiles
     depends_on: 
       - traefik
 

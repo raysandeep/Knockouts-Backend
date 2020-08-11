@@ -20,7 +20,6 @@ services:
       - internal
       - web
     volumes:
-      - static_volume:/app/staticfiles
       - static_volume:/staticfiles
     depends_on: 
       - traefik
@@ -51,6 +50,19 @@ services:
     depends_on: 
       - traefik
 
+
+  static:
+    container_name: nginx
+    image: nginx:1.19.0-alpine
+    volumes: 
+      - static_volume:/usr/share/nginx/html
+    labels:
+      - traefik.backend=static
+      - traefik.frontend.rule=Host:api.knockouts.dscvit.com;PathPrefix:/api/static
+      - traefik.docker.network=web
+      - traefik.port=80
+    networks: 
+      - internal
 
   redis: 
     container_name: redis

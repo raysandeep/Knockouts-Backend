@@ -25,4 +25,4 @@ urlpatterns = [
     path('api/admin/', include('admin_portal.urls')),
     path('api/participant/', include('participants.urls')),
     path('api/oauth/', include('rest_framework_social_oauth2.urls')),
-]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]

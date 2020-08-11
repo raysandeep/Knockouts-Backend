@@ -53,7 +53,7 @@ services:
 
 
   redis: 
-    name: redis
+    container_name: redis
     image: redis
     labels:
       - traefik.enable=false

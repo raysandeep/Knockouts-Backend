@@ -1,0 +1,6 @@
+fastapi==0.58.0
+pydantic==1.5.1
+redis==3.5.3
+requests==2.24.0
+starlette==0.13.4
+uvicorn

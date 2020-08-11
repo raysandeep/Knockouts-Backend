@@ -2,8 +2,8 @@
 <a href="https://dscvit.com">
 	<img src="https://user-images.githubusercontent.com/30529572/72455010-fb38d400-37e7-11ea-9c1e-8cdeb5f5906e.png" />
 </a>
-	<h2 align="center"> KnockOuts Backend </h2>
-	<h4 align="center"> A Competetive Coding Portal Backend  <h4>
+	<h2 align="center"> < Insert Project Title Here > </h2>
+	<h4 align="center"> < Insert Project Description Here > <h4>
 </p>
 
 ---
@@ -12,8 +12,8 @@
 
 
 ## Functionalities
-- [x]  Run Code
-- [x]  Submit Code
+- [ ]  < insert functionality >
+- [ ]  < insert functionality >
 - [ ]  < insert functionality >
 - [ ]  < insert functionality >
 
@@ -99,3 +99,4 @@ John Doe
 <p align="center">
 	Made with :heart: by <a href="https://dscvit.com">DSC VIT</a>
 </p>
+

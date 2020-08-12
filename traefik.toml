@@ -14,6 +14,17 @@ defaultEntryPoints = ["http", "https"]
     address = ":443"
       [entryPoints.https.tls]
 
+[tracing]
+  serviceName = "traefik"
+
+[metrics]
+  [metrics.influxDB]
+    address = "localhost:8089"
+    database = "influxdb"
+    username = "sandeep"
+    password = "abhis@123"
+    addServicesLabels = true
+
 [api]
 entrypoint="dashboard"
 

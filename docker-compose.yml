@@ -76,6 +76,27 @@ services:
     networks: 
       - internal
 
+  influxdb:
+    image: influxdb:1.5.4-alpine
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - "127.0.0.1:8089:8089"
+    volumes:
+      - ./influxdb:/var/lib/influxdb
+    environment:
+      - INFLUXDB_DB=influxdb
+      - INFLUXDB_USER="${INFLUX_ADMIN}"
+      - INFLUXDB_USER_PASSWORD="${INFLUX_PASS}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=Host:influxdb.knockouts.dscvit.com"
+      - "traefik.port=8089"
+      - "traefik.docker.network=web"
+    networks:
+      - web
+      - default
+
   traefik:
     image: traefik:1.7.2-alpine
     restart: always
@@ -97,6 +118,9 @@ volumes:
   static_volume:
 
 networks:
+  default:
+    external:
+      name: influx
   web:
     external: true
   internal:

@@ -17,7 +17,7 @@ DEBUG = False if os.environ.get("DEBUG") == "False" else True
 
 GOOGLE_RECAPTCHA = os.environ.get("GOOGLE_RECAPTCHA")
 
-ALLOWED_HOSTS = ['api.knockouts.dscvit.com']
+ALLOWED_HOSTS = ['api1.knockouts.dscvit.com']
 
 INSTALLED_APPS = [
     # CORS_APP

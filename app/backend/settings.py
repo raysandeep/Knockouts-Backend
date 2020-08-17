@@ -203,7 +203,7 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = [
     'https://comp-edge.netlify.app',
     'https://knockouts.dscvit.com',
-    'https://tknock.netlify.app/'
+    'https://tknock.netlify.app'
 ]
 
 CORS_ALLOW_HEADERS = [

@@ -17,7 +17,7 @@ DEBUG = False if os.environ.get("DEBUG") == "False" else True
 
 GOOGLE_RECAPTCHA = os.environ.get("GOOGLE_RECAPTCHA")
 
-ALLOWED_HOSTS = ['api1.knockouts.dscvit.com']
+ALLOWED_HOSTS = ['api1.knockouts.dscvit.com','api.knockouts.dscvit.com']
 
 INSTALLED_APPS = [
     # CORS_APP
@@ -135,8 +135,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '600/hour',
-        'user': '1000/hour'
+        'anon': '400/minute',
+        'user': '60/minute'
     }
 }
 
@@ -202,7 +202,8 @@ CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = [
     'https://comp-edge.netlify.app',
-    'https://knockouts.dscvit.com'
+    'https://knockouts.dscvit.com',
+    'https://tknock.netlify.app/'
 ]
 
 CORS_ALLOW_HEADERS = [

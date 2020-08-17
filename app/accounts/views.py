@@ -53,8 +53,8 @@ class UserSignupView(APIView):
 
         print(resp.json())
 
-        # if not resp.json().get('success'):
-        #     return Response(data={'message': 'ReCAPTCHA not verified!'}, status=406)
+        if not resp.json().get('success'):
+            return Response(data={'message': 'ReCAPTCHA not verified!'}, status=406)
 
         serializer = UserSignupSerializer(data=request.data)
 

@@ -12,6 +12,7 @@ JUDGEAPI_URL = os.environ.get("JUDGEAPI_URL")
 
 FASTAPI_URL = os.environ.get("FASTAPI_URL")
 
+APPEND_SLASH = True
 
 DEBUG = False if os.environ.get("DEBUG") == "False" else True
 

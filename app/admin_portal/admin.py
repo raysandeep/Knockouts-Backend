@@ -8,9 +8,9 @@ from .models import (
     RoomParticipantManager,
     Rooms,
     Rounds,
-    TestCaseSolutionLogger
+    TestCaseSolutionLogger,
+    DisQualifyModel
 )
-
 
 admin.site.register(QuestionsModel)
 admin.site.register(TestCaseHolder)
@@ -19,3 +19,4 @@ admin.site.register(RoomParticipantManager)
 admin.site.register(Rooms)
 admin.site.register(Rounds)
 admin.site.register(TestCaseSolutionLogger)
+admin.site.register(DisQualifyModel)

@@ -14,16 +14,6 @@ defaultEntryPoints = ["http", "https"]
     address = ":443"
       [entryPoints.https.tls]
 
-[tracing]
-  serviceName = "traefik"
-
-[metrics]
-  [metrics.influxDB]
-    address = "localhost:8089"
-    database = "influxdb"
-    username = "sandeep"
-    password = "abhis@123"
-    addServicesLabels = true
 
 [api]
 entrypoint="dashboard"
@@ -37,6 +27,6 @@ onHostRule = true
   entryPoint = "http"
 
 [docker]
-domain = "api.knockouts.dscvit.com"
+domain = "api1.knockouts.dscvit.com"
 watch = true
 network = "web"

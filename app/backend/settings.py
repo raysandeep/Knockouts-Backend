@@ -1,7 +1,9 @@
 import os
 # from decouple import config
 # import django_heroku
+import mimetypes
 
+mimetypes.add_type("text/css", ".css", True)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -12,12 +14,11 @@ JUDGEAPI_URL = os.environ.get("JUDGEAPI_URL")
 
 FASTAPI_URL = os.environ.get("FASTAPI_URL")
 
-
 DEBUG = False if os.environ.get("DEBUG") == "False" else True
 
 GOOGLE_RECAPTCHA = os.environ.get("GOOGLE_RECAPTCHA")
 
-ALLOWED_HOSTS = ['api.knockouts.dscvit.com']
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     # CORS_APP
@@ -135,8 +136,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '600/hour',
-        'user': '1000/hour'
+        'anon': '300/minute',
+        'user': '100/minute'
     }
 }
 
@@ -202,7 +203,8 @@ CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = [
     'https://comp-edge.netlify.app',
-    'https://knockouts.dscvit.com'
+    'https://knockouts.dscvit.com',
+    'https://tknock.netlify.app'
 ]
 
 CORS_ALLOW_HEADERS = [
@@ -233,3 +235,4 @@ CACHES = {
 }
 
 # django_heroku.settings(locals())
+# aws ecr get-login-password | docker login --username AWS --password-stdin 948469395557.dkr.ecr.ap-south-1.amazonaws.com/knockouts

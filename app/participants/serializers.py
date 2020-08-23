@@ -5,7 +5,9 @@ from admin_portal.models import (
     RoomParticipantManager,
     QuestionsModel,
     TestCaseHolder,
-    TestCaseSolutionLogger
+    TestCaseSolutionLogger,
+    Rounds,
+    Rooms
 )
 
 
@@ -38,20 +40,46 @@ class RoomParticipantUpdateSerializer(serializers.ModelSerializer):
         exclude = ['end_time', 'start_time', 'is_submitted', 'score']
 
 
+class RoomParticipantAbstract1Serializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source='participant.full_name')
+    room_question = serializers.CharField(source='room.question.id')
+    participant_email = serializers.EmailField(source='participant.username')
+
+    class Meta:
+        model = RoomParticipantAbstract
+        exclude = ['room']
+
+
+class RoomsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rooms
+        fields = ['round', 'id']
+        depth = 1
+
+
 class RoomParticipantAbstractSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(source='participant.full_name')
     participant_email = serializers.EmailField(source='participant.username')
     qualification = serializers.BooleanField(source='participant.is_disqualified')
     block = serializers.BooleanField(source='participant.is_blocked')
     currentStatus = serializers.SerializerMethodField()
+    opponents = serializers.SerializerMethodField()
+    round = serializers.SerializerMethodField()
 
     class Meta:
         model = RoomParticipantAbstract
         exclude = ['participant']
         depth = 1
 
+    def get_round(self, obj):
+        return RoomsSerializer(Rooms.objects.filter(id=obj.room.id), many=True).data
+
     def get_currentStatus(self, obj):
         return RoomParticipantSerializer(RoomParticipantManager.objects.filter(room_seat=obj.id), many=True).data
+
+    def get_opponents(self, obj):
+        return RoomParticipantAbstract1Serializer(
+            RoomParticipantAbstract.objects.filter(room=obj.room).exclude(id=obj.id), many=True).data
 
 
 class QuestionAdminSerializer(serializers.ModelSerializer):

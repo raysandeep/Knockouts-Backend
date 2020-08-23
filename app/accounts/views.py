@@ -22,7 +22,7 @@ from social_django.utils import load_strategy, load_backend
 from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
 from social_core.backends.oauth import BaseOAuth2
 from django.conf import settings
-import requests 
+import requests
 import random
 import string
 
@@ -32,8 +32,7 @@ class UserSignupView(APIView):
     permission_classes = (AllowAny,)
     parser_classes = [JSONParser]
 
-
-    def get_random_string(self,length):
+    def get_random_string(self, length):
         letters = string.ascii_lowercase
         result_str = ''.join(random.choice(letters) for i in range(length))
         print("Random string of length", length, "is:", result_str)
@@ -41,7 +40,7 @@ class UserSignupView(APIView):
 
     # Sigup user (create new object)
     def post(self, request):
-        data={
+        data = {
             'secret': settings.GOOGLE_RECAPTCHA,
             'response': request.data.get('g_token', None)
         }
@@ -60,7 +59,7 @@ class UserSignupView(APIView):
 
         if serializer.is_valid():
             user_data = serializer.data
-            password = request.data.get('password',self.get_random_string(8))
+            password = request.data.get('password', self.get_random_string(8))
             try:
                 User.objects.create_user(
                     password=password,
@@ -71,12 +70,12 @@ class UserSignupView(APIView):
             except ValueError as e:
                 print(e)
                 return Response({
-                    'message': 'Please don\'t try to override the config!' ,
+                    'message': 'Please don\'t try to override the config!',
                     'error': str(e)
                 }, status=403)
             return Response({"message": "User Signed up successfully!"}, status=201)
         else:
-            return Response({"message": "User already exists!","errors":serializer.errors}, status=409)
+            return Response({"message": "User already exists!", "errors": serializer.errors}, status=409)
 
 
 class UserLoginView(APIView):
@@ -85,11 +84,42 @@ class UserLoginView(APIView):
 
     # User Login Create a Auth Token
     def post(self, request):
-        req_data = request.data
-        user = authenticate(username=req_data['username'], password=req_data['password'])
-        if not user:
-            return Response({"message": "Invalid Details"}, status=400)
-        elif user.is_blocked or user.is_disqualified:
+        data = {
+            'secret': settings.GOOGLE_RECAPTCHA,
+            'response': request.data.get('g_token', None)
+        }
+
+        resp = requests.post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            data=data
+        )
+
+        print(resp.json())
+
+        if not resp.json().get('success'):
+            return Response(data={'message': 'ReCAPTCHA not verified!'}, status=406)
+
+        password = request.data.get('password', None)
+        print(password)
+
+        if password == None:
+            user = User.objects.filter(username=request.data['username'])
+            print(user.count())
+            if user.count() == 0:
+                return Response({"message": "Invalid Details"}, status=400)
+            user = user[0]
+        else:
+            user = authenticate(username=request.data['username'], password=password)
+            print(user)
+            if not user:
+                return Response({"message": "Invalid Details"}, status=400)
+
+        try:
+            condition = user.is_blocked or user.is_disqualified
+        except:
+            pass
+
+        if condition:
             return Response({"message": "You don't have access to the portal. Contact contact@dscvit.com"}, status=403)
         else:
             token, _ = Token.objects.get_or_create(user=user)
@@ -109,6 +139,21 @@ class AdminLoginView(APIView):
 
     # User Login Create a Auth Token
     def post(self, request):
+        data = {
+            'secret': settings.GOOGLE_RECAPTCHA,
+            'response': request.data.get('g_token', None)
+        }
+
+        resp = requests.post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            data=data
+        )
+
+        print(resp.json())
+
+        if not resp.json().get('success'):
+            return Response(data={'message': 'ReCAPTCHA not verified!'}, status=406)
+
         req_data = request.data
         user = authenticate(username=req_data['username'], password=req_data['password'])
         if not user:
@@ -149,6 +194,7 @@ class DisQualifyUser(APIView):
 class Googlelogin(APIView):
     permission_classes = (AllowAny,)
     parser_classes = [JSONParser]
+
     def post(self, request):
         req_data = request.data
         serializer = SocialSerializer(data=request.data)
@@ -194,5 +240,5 @@ class Googlelogin(APIView):
                 }}, status=200)
         else:
             return Response({
-                'message':'Failed'
-            },status=400)
+                'message': 'Failed'
+            }, status=400)

@@ -13,6 +13,9 @@ class QuestionsModel(models.Model):
     is_verified = models.BooleanField(default=False)
     difficulty_level = models.IntegerField(default=0)
 
+    def __str__(self):
+        return self.question_title
+
 
 class TestCaseHolder(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True)
@@ -45,6 +48,9 @@ class RoomParticipantAbstract(models.Model):
     room = models.ForeignKey(Rooms, on_delete=models.CASCADE)
     participant = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return "{} {}".format(self.participant.username, self.room.question.question_title)
+
 
 class RoomParticipantManager(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True)
@@ -55,6 +61,9 @@ class RoomParticipantManager(models.Model):
     language_of_code = models.CharField(max_length=100)
     is_submitted = models.BooleanField(default=False)
     score = models.IntegerField(default=0)
+
+    def __str__(self):
+        return "{} - {} - {}".format(self.room_seat.participant, self.is_submitted, self.score)
 
 
 class TestCaseSolutionLogger(models.Model):
@@ -69,3 +78,9 @@ class TestCaseSolutionLogger(models.Model):
     token = models.CharField(max_length=100)
     is_solved = models.BooleanField(default=False)
     score_for_this_testcase = models.IntegerField(default=0)
+
+
+class DisQualifyModel(models.Model):
+    id = models.UUIDField(default=uuid4, primary_key=True)
+    dis_round = models.ForeignKey(Rounds, on_delete=models.CASCADE)
+    users = JSONField()

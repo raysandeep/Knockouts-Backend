@@ -4,13 +4,14 @@ services:
   web:
     env_file: ./.env
     build: ./app
-    image: raysandeep/knockouts
-    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --timeout 120 --log-level debug -k gevent --workers 8
+    image: 948469395557.dkr.ecr.ap-south-1.amazonaws.com/knockouts:web
     deploy:
       mode: replicated
       replicas: 4
       restart_policy:
         condition: any
+    ports: 
+      - 8000:8000
     labels:
       - traefik.backend=web
       - traefik.frontend.rule=Host:api1.knockouts.dscvit.com;PathPrefix:/api
@@ -26,7 +27,7 @@ services:
 
   web1:
     build: ./app1
-    image: raysandeep/knockouts1
+    image: 948469395557.dkr.ecr.ap-south-1.amazonaws.com/knockouts:web1
     command: uvicorn main:app --host 0.0.0.0 --port 5000
     ports:
       - 5000:5000

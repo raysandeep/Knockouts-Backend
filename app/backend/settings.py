@@ -135,10 +135,10 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle'
     ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '300/minute',
-        'user': '100/minute'
-    }
+    # 'DEFAULT_THROTTLE_RATES': {
+    #     'anon': '300/minute',
+    #     'user': '100/minute'
+    # }
 }
 
 AUTHENTICATION_BACKENDS = (

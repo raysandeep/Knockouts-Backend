@@ -5,7 +5,9 @@ from .permissions import IsDSCModerator, IsDSCQuestionModerator
 from .models import (
     QuestionsModel,
     TestCaseHolder,
-    Rounds
+    Rounds,
+    RoomParticipantManager,
+    DisQualifyModel
 )
 from .serializers import (
     QuestionSerializer,
@@ -13,7 +15,8 @@ from .serializers import (
     AdminQuestionSerializer,
     RoundSerializer,
     RoomsSerializer,
-    RoomParticipantAbstractSerializer
+    RoomParticipantAbstractSerializer,
+    DisQualifySerailizer
 )
 from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
@@ -21,7 +24,7 @@ from rest_framework.response import Response
 from accounts.models import User
 import math
 from admin_portal.models import RoomParticipantAbstract, Rooms
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 from accounts.serializers import (
     UserSignupSerializer
 )
@@ -197,7 +200,7 @@ class GetAllRoomsListAPIView(ListAPIView):
 class GetPendingPplAPIView(ListAPIView):
     lookup_url_kwarg = "round"
     serializer_class = UserSignupSerializer
-    permission_classes = [IsDSCQuestionModerator]
+    permission_classes = [IsDSCModerator]
     parsers = [JSONParser]
 
     def get_queryset(self):
@@ -289,3 +292,79 @@ class RoomDestroyAPIView(DestroyAPIView):
     serializer_class = RoomsSerializer
     permission_classes = [IsDSCModerator]
     parsers = [JSONParser]
+
+
+class DisQualifyUsers(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, id):
+        query = Rooms.objects.filter(round=id)
+        disqualifed_users = []
+        if query.count() == 0:
+            return Response(status=404)
+        for i in query:
+            partiticipants = RoomParticipantAbstract.objects.filter(room=i.id)
+            for j in partiticipants:
+                try:
+                    user_manager = j.roomparticipantmanager
+                except Exception as e:
+                    print(e)
+                    dicti = {
+                        "room_seat": j,
+                        "current_code": "print('Default Submission')",
+                        "language_of_code": 71
+
+                    }
+                    manager = RoomParticipantManager(**dicti)
+                    manager.save()
+                    disqualifed_users.append(j.participant.username)
+        return Response(disqualifed_users, status=201)
+
+    def post(self, request, id):
+        query = Rooms.objects.filter(round=id)
+        disqualifed_users = []
+        if query.count() == 0:
+            return Response(status=404)
+        for i in query:
+            partiticipants = RoomParticipantAbstract.objects.filter(room=i.id)
+            for j in partiticipants:
+                try:
+                    user_manager = j.roomparticipantmanager
+                except Exception as e:
+                    print(e)
+                    dicti = {
+                        "room_seat": j,
+                        "current_code": "print('Default Submission')",
+                        "language_of_code": 71
+
+                    }
+                    manager = RoomParticipantManager(**dicti)
+                    manager.save()
+                    disqualifed_users.append(j.participant.username)
+        for i in query:
+            partiticipants = RoomParticipantManager.objects.filter(room_seat__room=i.id).order_by('-score')
+            for j in range(1, len(partiticipants)):
+                disqualify = partiticipants[j].room_seat.participant
+                disqualify.is_disqualified = True
+                disqualify.save()
+                disqualifed_users.append(disqualify.username)
+        users = {
+            'count': len(disqualifed_users),
+            'users': disqualifed_users
+        }
+        final_dicti = {
+            'dis_round': Rounds.objects.filter(id=id)[0],
+            'users': users
+        }
+        store_status = DisQualifyModel(**final_dicti)
+        store_status.save()
+        return Response(users, status=201)
+
+
+class DisQualifiedUsersGet(APIView):
+    permission_classes = [IsDSCModerator]
+
+    def get(self, request, id):
+        query = DisQualifyModel.objects.filter(dis_round__id=id)
+        serializer = DisQualifySerailizer(query, many=True)
+        return Response(serializer.data, status=201)

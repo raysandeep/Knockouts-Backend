@@ -131,3 +131,5 @@ dmypy.json
 
 
 .env.dev
+
+app/knockoutsfb.json

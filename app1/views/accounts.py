@@ -14,6 +14,25 @@ rs = redis.Redis.from_url(os.getenv("REDIS_URL"))
 JUDGE_APIURL = os.getenv("JUDGEAPI_URL1")
 BASE_URL = os.getenv("FASTAPI_URL")
 DJANGO_URL = os.getenv("HOST_URL")
+GOOGLE_RECAPTCHA = os.getenv("GOOGLE_RECAPTCHA")
+
+
+def checkGAuth(gtoken):
+    data = {
+        'secret': GOOGLE_RECAPTCHA,
+        'response': gtoken
+    }
+
+    resp = rq.post(
+        'https://www.google.com/recaptcha/api/siteverify',
+        data=data
+    )
+
+    print(resp.json())
+    if not resp.json().get('success'):
+        return False
+    return True
+
 
 @router.on_event("startup")
 async def startup_event():
@@ -28,7 +47,8 @@ async def get():
 
 @router.post("/api1/run")
 async def runcode(req: Request):
-    response = rq.request("POST", JUDGE_APIURL, json=await req.json())
+    body = await req.json()
+    response = rq.request("POST", JUDGE_APIURL, json=body)
     resp = response.json()
     print(type(resp))
     return resp

@@ -1,5 +1,0 @@
-aws --region us-east-1 --profile educate ${aws_region} ecr get-login-password \
-    | docker login \
-        --password-stdin \
-        --username AWS \
-        "219152407825.dkr.ecr.us-east-1.amazonaws.com" 

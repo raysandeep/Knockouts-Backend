@@ -480,6 +480,8 @@ class CheckSubmissions(APIView):
             score_reduction = (duration_in_m * settings.TIME_MULTIPLY_CONSTANT)
             print(testcases_score)
             print(score_reduction)
+            if testcases_score is None:
+                testcases_score = 0
             try:
                 total_score = math.ceil((testcases_score - score_reduction))
             except TypeError as e:

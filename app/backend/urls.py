@@ -24,7 +24,11 @@ urlpatterns = [
                   path('api/auth/', include('accounts.urls')),
                   path('api/admin/', include('admin_portal.urls')),
                   path('api/participant/', include('participants.urls')),
-                  path('api/oauth/', include('rest_framework_social_oauth2.urls')),
-                  path('csv/', health.myview),
+                  # path('api/oauth/', include('rest_framework_social_oauth2.urls')),
+                  # path('csv/', health.myview),
+                  path('score/', health.ScoreCount.as_view()),
                   path('', health.Health.as_view()),
-              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+
+

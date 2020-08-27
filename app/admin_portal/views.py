@@ -50,7 +50,7 @@ class QuestionUpdateAPIView(RetrieveUpdateDestroyAPIView):
 
 
 class QuestionsListAPIView(ListAPIView):
-    queryset = QuestionsModel.objects.all()
+    queryset = QuestionsModel.objects.filter(id="3ab2886f-f852-448f-a19a-65e91884ce43")
     serializer_class = QuestionSerializer
     permission_classes = [IsDSCModerator]
     parsers = [JSONParser]

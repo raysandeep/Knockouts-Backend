@@ -84,3 +84,11 @@ class DisQualifyModel(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True)
     dis_round = models.ForeignKey(Rounds, on_delete=models.CASCADE)
     users = JSONField()
+
+
+# 8
+# Day 3 - 34 - 16
+# 4 - 16 - 8
+# 5 - 8 - 4
+# 6 - 4 - 2
+# 7 - 2 - 1

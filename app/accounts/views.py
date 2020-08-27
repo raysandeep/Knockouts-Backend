@@ -7,9 +7,7 @@ from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from admin_portal.permissions import IsDSCQuestionModerator
 from .serializers import (
     UserSignupSerializer,
-    ProfilePicSerializer,
     UserAdminSerializer,
-    SocialSerializer
 )
 from .models import (
     User,
@@ -18,13 +16,11 @@ from .models import (
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
-from social_django.utils import load_strategy, load_backend
-from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
-from social_core.backends.oauth import BaseOAuth2
 from django.conf import settings
 import requests
 import random
 import string
+from firebase_admin import auth
 
 
 # Create your views here.
@@ -100,16 +96,23 @@ class UserLoginView(APIView):
             return Response(data={'message': 'ReCAPTCHA not verified!'}, status=406)
 
         password = request.data.get('password', None)
-        print(password)
-
-        if password == None:
-            user = User.objects.filter(username=request.data['username'])
+        username = request.data.get('username', None)
+        id_token = request.data.get('id_token', None)
+        if password is None and username is None:
+            try:
+                decoded_token = auth.verify_id_token(id_token)
+                username = decoded_token['email']
+            except Exception as e:
+                print(e)
+                return Response({"message": "Firebase Token Verification Failed."}, status=400)
+            user = User.objects.filter(username=username)
             print(user.count())
             if user.count() == 0:
                 return Response({"message": "Invalid Details"}, status=400)
             user = user[0]
         else:
-            user = authenticate(username=request.data['username'], password=password)
+            print(username, password)
+            user = authenticate(username=username, password=password)
             print(user)
             if not user:
                 return Response({"message": "Invalid Details"}, status=400)
@@ -155,7 +158,7 @@ class AdminLoginView(APIView):
             return Response(data={'message': 'ReCAPTCHA not verified!'}, status=406)
 
         req_data = request.data
-        user = authenticate(username=req_data['username'], password=req_data['password'])
+        user = authenticate(username=req_data.get('username'), password=req_data.get('password'))
         if not user:
             return Response({"message": "Invalid Details"}, status=400)
         elif not user.is_admin:
@@ -189,56 +192,3 @@ class DisQualifyUser(APIView):
             user[0].is_disqualified = True
             return Response(status=204)
         return Response(status=403)
-
-
-class Googlelogin(APIView):
-    permission_classes = (AllowAny,)
-    parser_classes = [JSONParser]
-
-    def post(self, request):
-        req_data = request.data
-        serializer = SocialSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        provider = req_data['provider']
-        strategy = load_strategy(request)
-
-        try:
-            backend = load_backend(
-                strategy=strategy,
-                name=provider,
-                redirect_uri=None)
-        except MissingBackend:
-            return Response({"message": "Please provide a valid provider"}, status=400)
-
-        try:
-            if isinstance(backend, BaseOAuth2):
-                access_token = req_data['access_token']
-
-            # Creating a new user by using google or facebook
-            user = backend.do_auth(access_token)
-            print(user.id)
-            authenticated_user = backend.do_auth(access_token, user=user)
-
-        except Exception as error:
-            return Response({
-                "error": {
-                    "access_token": "Invalid token",
-                    "details": str(error)
-                }
-            }, status=400)
-
-        if authenticated_user and authenticated_user.is_active:
-            user = User.objects.filter(Q(username__iexact=user.username) & Q(email=user.email))
-            token, _ = Token.objects.get_or_create(user=user)
-            return Response({
-                "message": "User Logged In",
-                "user": {
-                    "username": user.username,
-                    "full_name": user.full_name,
-                    "phone_no": user.phone,
-                    "token": token.key
-                }}, status=200)
-        else:
-            return Response({
-                'message': 'Failed'
-            }, status=400)

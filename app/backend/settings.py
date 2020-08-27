@@ -1,10 +1,14 @@
 import os
-# from decouple import config
-# import django_heroku
 import mimetypes
+import firebase_admin
+from firebase_admin import credentials
 
 mimetypes.add_type("text/css", ".css", True)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+cred = credentials.Certificate("./knockoutsfb.json")
+firebase_admin.initialize_app(cred)
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
@@ -14,7 +18,7 @@ JUDGEAPI_URL = os.environ.get("JUDGEAPI_URL")
 
 FASTAPI_URL = os.environ.get("FASTAPI_URL")
 
-DEBUG = False if os.environ.get("DEBUG") == "False" else True
+DEBUG = False
 
 GOOGLE_RECAPTCHA = os.environ.get("GOOGLE_RECAPTCHA")
 
@@ -39,9 +43,6 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_redis',
 
-    'oauth2_provider',
-    'social_django',
-    'rest_framework_social_oauth2',
 
 ]
 
@@ -127,9 +128,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
-        'rest_framework_social_oauth2.authentication.SocialAuthentication',
-        'rest_framework.authentication.TokenAuthentication'
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
@@ -141,36 +140,6 @@ REST_FRAMEWORK = {
     }
 }
 
-AUTHENTICATION_BACKENDS = (
-    'social_core.backends.facebook.FacebookAppOAuth2',
-    'social_core.backends.google.GoogleOAuth2',
-    'social_core.backends.google.GoogleOAuth',
-    'social_core.backends.facebook.FacebookOAuth2',
-    'rest_framework_social_oauth2.backends.DjangoOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-)
-
-# Facebook configuration
-SOCIAL_AUTH_FACEBOOK_KEY = os.getenv('SOCIAL_AUTH_FACEBOOK_KEY')
-SOCIAL_AUTH_FACEBOOK_SECRET = os.getenv('SOCIAL_AUTH_FACEBOOK_SECRET')
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
-
-SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
-SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'fields': 'id, name, email'}
-FACEBOOK_EXTENDED_PERMISSIONS = ['email', 'name']
-SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
-SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
-
-# Google configuration
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
-
-# Define SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE to get extra permissions from Google.
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
-]
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -181,21 +150,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
-SOCIAL_AUTH_PIPELINE = (
-    'social_core.pipeline.social_auth.social_details',
-    'social_core.pipeline.social_auth.social_uid',
-    'social_core.pipeline.social_auth.auth_allowed',
-    'social_core.pipeline.social_auth.social_user',
-    'social_core.pipeline.user.get_username',
-    'social_core.pipeline.social_auth.associate_by_email',
-    'social_core.pipeline.user.create_user',
-    'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.social_auth.load_extra_data',
-    'social_core.pipeline.user.user_details',
-)
 
 
 # CORS CONFIGURATION
@@ -221,7 +177,7 @@ CORS_ALLOW_HEADERS = [
     'X-Requested-With',
 ]
 
-TIME_MULTIPLY_CONSTANT = 2
+TIME_MULTIPLY_CONSTANT = 0.5
 MARKS_FOR_EACH_QUES = 100
 
 CACHES = {

@@ -10,7 +10,7 @@
 [![DOCS](https://img.shields.io/badge/Documentation-see%20docs-green?style=flat-square&logo=appveyor)](https://documenter.getpostman.com/view/8653133/T17Nbjz8) 
   [![UI ](https://img.shields.io/badge/User%20Interface-Link%20to%20UI-orange?style=flat-square&logo=appveyor)](https://knockouts.dscvit.com/)
 
-#####Link for Forntend Repo : <a href="https://github.com/GDGVIT/competitive-edge-web">Knockouts-Frontend</a>
+##### Link for Forntend Repo : <a href="https://github.com/GDGVIT/competitive-edge-web">Knockouts-Frontend</a>
 
 ## Functionalities
 - [x]  Run Code

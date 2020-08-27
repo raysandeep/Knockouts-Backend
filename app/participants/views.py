@@ -1,3 +1,4 @@
+import requests
 from django.shortcuts import render
 
 # Create your views here.
@@ -229,18 +230,18 @@ def getTimeLimit(id):
     return 2.5
 
 
-def sendRequest(data, room_id):
+def sendRequest(data, room_id, count):
     headers = {
         'Content-Type': 'application/json'
     }
     response = rq.request("POST", settings.JUDGEAPI_URL, headers=headers, json=data)
     tokens = []
     print(response.status_code)
-
+    print(data)
     if response.status_code == 201:
         for i in response.json():
             tokens.append(i["token"])
-        if cache.set(room_id + "__count", str(len(tokens)), timeout=60 * 5):
+        if cache.set(room_id + "__count", count, timeout=60 * 5):
             return True, tokens
     return False, []
 
@@ -339,13 +340,14 @@ class CallBackHandler(APIView):
         status = False
         if data['status']['id'] == 3:
             status = True
-        # print(data)
+        output = dobase64decode(data['stdout'])
+        print(output)
         print(data['status']['id'])
         dicti = {
             'room_solution': room[0],
             'test_case': test_case[0],
             'stdin': test_case[0].stdin,
-            'stdout': dobase64decode(data['stdout']),
+            'stdout': output,
             'time': data['time'],
             'memory': data['memory'],
             'error': dobase64decode(data['stderr']),
@@ -367,21 +369,43 @@ class SubmitQuestion(APIView):
     parsers = [JSONParser]
 
     def post(self, request):
+        data = {
+            'secret': settings.GOOGLE_RECAPTCHA,
+            'response': request.data.get('g_token', None)
+        }
+
+        resp = requests.post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            data=data
+        )
+
+        print(resp.json())
+
+        if not resp.json().get('success'):
+            return Response(data={'message': 'ReCAPTCHA not verified!'}, status=406)
+
         try:
             id = request.data["id"]
             question_id = request.data["question_id"]
         except:
             return Response(status=400)
         # get room
-        testcases = TestCaseSolutionLogger.objects.filter(room_solution=id)
-        testcases.delete()
+
         room = RoomParticipantManager.objects.filter(id=id)
         if not room.exists():
             return Response(status=400)
+        elif room.exists() and room[0].is_submitted:
+            return Response({"message": "Already Submitted"}, status=208)
+
         else:
             # get code
+            testcases = TestCaseSolutionLogger.objects.filter(room_solution=id)
+            testcases.delete()
             language_id = room[0].language_of_code
             current_code = room[0].current_code
+            current_score = room[0].score
+            room_id = room[0].id
+            cache.set(str(room_id) + "__score", current_score, timeout=60 * 5)
             my_list = []
             # got room get question from it
             question = QuestionsModel.objects.filter(id=question_id)
@@ -407,7 +431,7 @@ class SubmitQuestion(APIView):
             data = {
                 "submissions": my_list
             }
-            status, tokens = sendRequest(data, id)
+            status, tokens = sendRequest(data, id, len(my_list))
             return Response({
                 'status': status,
                 'tokens': tokens
@@ -441,32 +465,41 @@ class CheckSubmissions(APIView):
             if not seat.exists():
                 print("c")
                 return Response(status=400)
-
+            seat = seat[0]
             # Testcases
             root_testcases = TestCaseHolder.objects.filter(question=question[0].id).filter(is_sample=False)
-            testcases = TestCaseSolutionLogger.objects.filter(room_solution=seat[0]).filter(is_solved=True)
+            testcases = TestCaseSolutionLogger.objects.filter(room_solution=seat).filter(is_solved=True)
             testcases_solved = testcases.count()
             testcases_score = testcases.aggregate(Sum('score_for_this_testcase'))["score_for_this_testcase__sum"]
             print("TestCases Solved :", str(testcases_solved))
             total_testcases = root_testcases.count()
             # duration calculation
-            duration = (seat[0].end_time - seat[0].start_time)
+            duration = (seat.end_time - seat.start_time)
             duration_in_s = duration.total_seconds()
             duration_in_m = divmod(duration_in_s, 60)[0]
             score_reduction = (duration_in_m * settings.TIME_MULTIPLY_CONSTANT)
-
-            total_score = math.ceil((testcases_score - score_reduction))
-            seat[0].score = total_score
-
+            print(testcases_score)
+            print(score_reduction)
+            if testcases_score is None:
+                testcases_score = 0
+            try:
+                total_score = math.ceil((testcases_score - score_reduction))
+            except TypeError as e:
+                print(e)
+                total_score = 0
+            previous_score = int(cache.get(str(seat.id) + "__score"))
+            if previous_score > total_score:
+                seat.score = previous_score
+            else:
+                seat.score = total_score
             test_cases_info = TestCasesSolutionSerailizer(testcases, many=True)
 
             if testcases_solved == total_testcases:
-                seat[0].is_submitted = True
+                seat.is_submitted = True
 
-                seat[0].save()
+                seat.save()
                 return Response({
                     'status': 'All test cases passed',
-                    'score': total_score,
                     'testcases': testcases_solved,
                     'info': test_cases_info.data,
                     "total_questions_score": testcases_score,
@@ -476,18 +509,29 @@ class CheckSubmissions(APIView):
                 }, status=200)
 
             else:
-                seat[0].save()
-                return Response({
-                    'status': 'Partially solved',
-                    'score': total_score,
-                    'testcases': testcases_solved,
-                    'info': test_cases_info.data,
-                    "total_questions_score": testcases_score,
-                    "testcases_left": total_testcases - testcases_solved,
-                    "total_time": duration_in_m,
-                    "time_score_reduction": score_reduction,
-                    "overallstatus": "Partially Solved!"
-                }, status=206)
+                seat.save()
+                if testcases_solved == 0:
+                    return Response({
+                        'status': 'Failed!',
+                        'testcases': testcases_solved,
+                        'info': test_cases_info.data,
+                        "total_questions_score": testcases_score,
+                        "testcases_left": total_testcases - testcases_solved,
+                        "total_time": duration_in_m,
+                        "time_score_reduction": score_reduction,
+                        "overallstatus": "None of the testcases passed!"
+                    }, status=206)
+                else:
+                    return Response({
+                        'status': 'Partially solved',
+                        'testcases': testcases_solved,
+                        'info': test_cases_info.data,
+                        "total_questions_score": testcases_score,
+                        "testcases_left": total_testcases - testcases_solved,
+                        "total_time": duration_in_m,
+                        "time_score_reduction": score_reduction,
+                        "overallstatus": "Partially Solved!"
+                    }, status=206)
 
 
 class CheckSubmissionsAlreadySubmitted(APIView):
@@ -507,6 +551,7 @@ class CheckSubmissionsAlreadySubmitted(APIView):
             return Response(status=400)
         else:
             room = room[0]
+
             allseat = RoomParticipantManager.objects.prefetch_related('room_seat').all()  # room_seat
             seat = allseat.filter(room_seat=room).filter(id=id)
             if not seat.exists():
@@ -514,7 +559,7 @@ class CheckSubmissionsAlreadySubmitted(APIView):
                 return Response(status=400)
 
             # Testcases
-            testcases = TestCaseSolutionLogger.objects.filter(room_solution=seat[0]).filter(is_solved=True)
+            testcases = TestCaseSolutionLogger.objects.filter(room_solution=seat).filter(is_solved=True)
             testcases_score = testcases.aggregate(Sum('score_for_this_testcase'))["score_for_this_testcase__sum"]
             test_cases_info = TestCasesSolutionSerailizer(testcases, many=True)
             return Response({

@@ -2,15 +2,16 @@
 <a href="https://dscvit.com">
 	<img src="https://user-images.githubusercontent.com/30529572/72455010-fb38d400-37e7-11ea-9c1e-8cdeb5f5906e.png" />
 </a>
-	<h2 align="center"> KnockOuts Backend </h2>
-	<h4 align="center"> A Competetive Coding Portal Backend  <h4>
+	<h2 align="center"> Knockouts Backend </h2>
+	<h4 align="center"> A Competitive Coding Portal Backend  <h4>
 </p>
 
 ---
 [![DOCS](https://img.shields.io/badge/Documentation-see%20docs-green?style=flat-square&logo=appveyor)](https://documenter.getpostman.com/view/8653133/T17Nbjz8) 
   [![UI ](https://img.shields.io/badge/User%20Interface-Link%20to%20UI-orange?style=flat-square&logo=appveyor)](https://knockouts.dscvit.com/)
 
-##### Link for Forntend Repo : <a href="https://github.com/GDGVIT/competitive-edge-web">Knockouts-Frontend</a>
+##### Link for Frontend Repo : <a href="https://github.com/GDGVIT/competitive-edge-web">Knockouts-Frontend</a>
+
 
 ## Functionalities
 - [x]  Run Code
